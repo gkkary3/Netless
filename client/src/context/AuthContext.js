@@ -3,6 +3,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -13,7 +14,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setError(null);
-      const response = await fetch("/auth/login", {
+      const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,7 +41,7 @@ export const AuthProvider = ({ children }) => {
   const signup = async (userData) => {
     try {
       setError(null);
-      const response = await fetch("/auth/signup", {
+      const response = await fetch(`${API_URL}/auth/signup`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,7 +66,7 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       setError(null);
-      const response = await fetch("/auth/logout", {
+      const response = await fetch(`${API_URL}/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
@@ -92,7 +93,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch("/auth/check", {
+        const response = await fetch(`${API_URL}/auth/check`, {
           credentials: "include",
         });
 
