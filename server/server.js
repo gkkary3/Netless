@@ -29,10 +29,11 @@ const cookieEncryptionKey = process.env.SESSION_SECRET;
 // 미들웨어 설정
 app.use(
   cors({
-    origin:
-      process.env.CLIENT_URL ||
-      "http://localhost:3000" ||
-      "http://127.0.0.1:3000", // 클라이언트 도메인 명시적 허용
+    origin: [
+      process.env.CLIENT_URL,
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+    ], // 클라이언트 도메인 명시적 허용
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // 모든 HTTP 메서드 허용
     credentials: true, // 인증 허용
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],

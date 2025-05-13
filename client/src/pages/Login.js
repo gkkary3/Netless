@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,22 +25,22 @@ const Login = () => {
   // 소셜 로그인 처리 함수
   const handleSocialLogin = (provider) => {
     // 전체 URL로 서버 엔드포인트 직접 호출
-    window.location.href = `http://localhost:4000/auth/${provider}`;
+    window.location.href = `${API_URL}/auth/${provider}`;
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-100 via-white to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white rounded-xl shadow-xl p-8 border border-indigo-100">
+    <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-gradient-to-br from-sky-100 via-white to-indigo-100 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md p-8 space-y-8 bg-white border border-indigo-100 shadow-xl rounded-xl">
         <div>
-          <h1 className="mt-2 text-center text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-600 font-pacifico transform hover:scale-105 transition-all duration-300">
+          <h1 className="mt-2 text-5xl font-extrabold text-center text-transparent transition-all duration-300 transform bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-600 font-pacifico hover:scale-105">
             Netless
           </h1>
-          <p className="mt-2 text-center text-sm text-gray-600 font-quicksand">
+          <p className="mt-2 text-sm text-center text-gray-600 font-quicksand">
             경계 없는 소통의 시작
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
+          <div className="-space-y-px rounded-md shadow-sm">
             <div>
               <label htmlFor="email" className="sr-only">
                 이메일
@@ -49,7 +50,7 @@ const Login = () => {
                 name="email"
                 type="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 bg-white placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="이메일"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -64,7 +65,7 @@ const Login = () => {
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 bg-white placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                 placeholder="비밀번호"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -73,14 +74,14 @@ const Login = () => {
           </div>
 
           {error && (
-            <div className="text-red-500 text-sm text-center">{error}</div>
+            <div className="text-sm text-center text-red-500">{error}</div>
           )}
 
           <div>
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-200 shadow-md"
+              className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white transition-all duration-200 border border-transparent rounded-md shadow-md group bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               {isLoading ? "로그인 중..." : "로그인"}
             </button>
@@ -93,18 +94,18 @@ const Login = () => {
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">
+                <span className="px-2 text-gray-500 bg-white">
                   소셜 계정으로 로그인
                 </span>
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3 mt-6">
               <div>
                 <button
                   type="button"
                   onClick={() => handleSocialLogin("google")}
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors duration-200"
+                  className="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
                 >
                   <svg
                     className="w-5 h-5 mr-2"
@@ -121,7 +122,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => handleSocialLogin("kakao")}
-                  className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-yellow-300 text-sm font-medium text-gray-800 hover:bg-yellow-400 transition-colors duration-200"
+                  className="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-800 transition-colors duration-200 bg-yellow-300 border border-gray-300 rounded-md shadow-sm hover:bg-yellow-400"
                 >
                   <svg
                     className="w-5 h-5 mr-2"
@@ -141,7 +142,7 @@ const Login = () => {
             <div className="text-sm">
               <Link
                 to="/signup"
-                className="font-medium text-indigo-600 hover:text-indigo-700 transition-colors duration-200"
+                className="font-medium text-indigo-600 transition-colors duration-200 hover:text-indigo-700"
               >
                 회원가입
               </Link>
