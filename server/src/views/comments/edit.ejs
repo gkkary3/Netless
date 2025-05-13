@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('../partials/head') %>
+  </head>
+  <body>
+    <%- include('../partials/header') %>
+    <div class="container col-lg-8">
+      <div class="card">
+        <h5 class="card-header">댓글 수정하기</h5>
+        <div class="card-body">
+          <form
+            action="/posts/<%= post._id %>/comments/<%= comment._id %>?_method=PUT"
+            method="POST"
+          >
+            <div class="form-group">
+              <textarea name="text" id="desc" class="form-control" rows="5">
+<%= comment.text || '' %></textarea
+              >
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">수정하기</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <%- include('../partials/footer') %>
+  </body>
+</html>

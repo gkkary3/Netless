@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 사용자 정의 폰트 설정 */
+@layer base {
+  .font-pacifico {
+    font-family: "Pacifico", cursive;
+  }
+
+  .font-quicksand {
+    font-family: "Quicksand", sans-serif;
+  }
+}
+
+/* 기타 사용자 정의 스타일 */

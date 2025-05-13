@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <div class="auth-wrapper">
+    <form method="POST" action="/auth/login">
+      <div class="text-center">
+        <h3 class="mb-3 font-weight-normal">로그인</h3>
+      </div>
+      <div class="mb-3 d-flex flex-column gap-2">
+        <label for="email" class="sr-only">이메일</label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          class="form-control"
+          placeholder="이메일"
+          required
+          autofocus
+        />
+        <label for="password" class="sr-only">비밀번호</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="form-control"
+          placeholder="비밀번호"
+          required
+          autofocus
+        />
+      </div>
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <button class="btn  btn-primary btn-block" type="submit">
+            로그인
+          </button>
+        </div>
+        <div>
+          <a
+            href="/auth/google"
+            class="btn  btn-google btn-block"
+            role="button"
+          >
+            <i class="fab fa-google"></i> 구글
+          </a>
+          <a
+            href="/auth/kakao"
+            class="btn  btn-kakao btn-block"
+            role="button"
+          >
+            <i class="fab fa-kakao"></i> 카카오
+          </a>
+        </div>
+      </div>
+      <div class="mt-2 text-end">
+        <a href="/signup">회원가입</a>
+    </form>
+  </div>
+  <%- include('../partials/footer') %>
+</body>
+</html>

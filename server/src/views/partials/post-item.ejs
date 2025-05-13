@@ -1,0 +1,103 @@
+<div class="mb-2 card">
+  <div class="card-body text-start">
+    <div class="d-flex align-items-center">
+      <a href="/profile/<%= post.author.id %>">
+        <h5><%= post.author.username %></h5>
+      </a>
+      <small class="text-muted ms-auto">
+        <%= post.createdAt.toDateString() %>
+      </small>
+
+      <% if (post.author.id.equals(currentUser._id)) { %>
+       <div class="dropdown ms-2">
+          <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+            <li><a class="text-center dropdown-item" href="/posts/<%= post._id %>/edit">Edit</a></li>
+            <li><form class="text-center dropdown-item" action="/posts/<%= post._id %>?_method=DELETE" method="POST"><button type="submit" class="no-outline">Delete</button></form></li>
+          </ul>
+        </div>
+
+       </div>
+      <% } %>
+      <p class="mt-2 card-text">
+        <%= post.description %>
+      </p>
+    </div>
+
+
+    <% if (post.image) { %>
+     <img class="w-100" src="/assets/images/<%= post.image  %>"/>
+    <% } %>
+
+    <hr class="mb-1">
+    <div class="d-flex justify-content-between">
+      <div class="row">
+        <form action="/posts/<%= post._id %>/like?_method=PUT" method="POST">
+          <% if (post.likes.find(event => event === currentUser._id.toString())) { %>
+            <button type="submit" class="no-outline" type="button">
+              <img src="/assets/images/like-1.png" height="20px">
+              <span class="ms-1"><%= post.likes.length %></span>
+            </button>
+          <% } else { %>
+            <button type="submit" class="no-outline" type="button">
+              <img src="/assets/images/like.png" height="20px">
+              <span class="ms-1"><%= post.likes.length %></span>
+            </button>
+          <% } %>
+        </form>
+      </div>
+      <a class="ms-auto pe-2" data-bs-toggle="collapse" href="#post<%= post._id %>">
+        댓글 <%= post.comments.length %>
+      </a>
+    </div>
+    
+    <hr class="mt-1">
+    <div class="collapse show" id="post<%= post._id %>">
+      <% if (post.comments.length > 0) { %>
+       <div class="card-body comment-section">
+        <% post.comments.forEach((comment)=> { %>
+          <div class="d-flex justify-content-between">
+            <div class="font-weight-bold">
+              <a href="/profile/<%= comment.author.id %>">
+                <h5><%= comment.author.username %></h5>
+              </a>
+              <small>
+                <%= comment.createdAt.toDateString() %>
+              </small>
+            </div>
+          </div>
+          <div class="mt-2 d-flex justify-content-between">
+            <p>
+              <%= comment.text %>
+            </p>
+            <% if (comment.author.id.equals(currentUser._id)) { %>
+             <div class="dropdown">
+              <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="bi bi-three-dots"></i>
+              </button>
+              <div class="dropdown-menu">
+                <a class='text-center dropdown-item' href="/posts/<%= post._id %>/comments/<%= comment._id %>/edit">Edit</a>
+                <form class='text-center dropdown-item' action="/posts/<%= post._id %>/comments/<%= comment._id %>?_method=DELETE" method="POST">
+                  <button class="no-outline" type="submit">Delete</button>
+                </form>
+              </div>
+             </div>
+            <% } %>
+          </div>
+         <% }) %> 
+       </div>
+      <% } %>
+    </div>
+    <div>
+      <form method="POST" action="/posts/<%= post._id %>/comments">
+        <div class="form-group">
+          <input name="text" id="desc" class="comment-section" placeholder="댓글을 작성해주세요." required>
+          <p class="small ms-2">엔터를 눌러주세요.</p>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>

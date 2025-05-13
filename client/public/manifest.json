@@ -1,0 +1,15 @@
+{
+  "short_name": "Netless",
+  "name": "Netless - 경계 없는 소통의 시작",
+  "icons": [
+    {
+      "src": "assets/favicon.svg",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#4F46E5",
+  "background_color": "#ffffff"
+}
