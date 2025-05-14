@@ -38,6 +38,7 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
     allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    exposedHeaders: ["set-cookie"], // 클라이언트에게 쿠키 헤더 노출
   })
 );
 
