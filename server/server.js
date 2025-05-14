@@ -33,6 +33,7 @@ app.use(
       process.env.CLIENT_URL,
       "http://localhost:3000",
       "http://127.0.0.1:3000",
+      "https://netless.vercel.app", // Vercel 도메인 직접 추가
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
