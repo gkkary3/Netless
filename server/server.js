@@ -57,6 +57,7 @@ app.use(
       sameSite: "none", // 크로스 사이트 쿠키 허용
       secure: true, // HTTPS에서만 쿠키 전송
       httpOnly: true, // JavaScript에서 쿠키 접근 방지
+      domain: ".netless.vercel.app", // 또는 ".railway.app" (API 서버 도메인 기준)
     },
   })
 );
@@ -105,6 +106,14 @@ app.use("/posts/:id/comments", commentsRouter); // Nested route for comments
 app.use("/posts/:id/like", likesRouter);
 app.use("/profile/:id", profileRouter);
 app.use("/friends", friendsRouter);
+
+app.get("/api/auth-status", (req, res) => {
+  res.json({
+    isAuthenticated: req.isAuthenticated(),
+    user: req.user || null,
+    session: req.session,
+  });
+});
 
 app.use((err, req, res, next) => {
   res.status(err.status || 500);
