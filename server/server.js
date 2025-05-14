@@ -20,7 +20,7 @@ const likesRouter = require("./routes/likes.router");
 const profileRouter = require("./routes/profile.router");
 
 const serverConfig = config.get("server");
-const port = serverConfig.port;
+const port = process.env.PORT || serverConfig.port;
 require("dotenv").config();
 require("./config/passport");
 
