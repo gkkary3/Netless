@@ -33,7 +33,6 @@ app.use(
       process.env.CLIENT_URL,
       "http://localhost:3000",
       "http://127.0.0.1:3000",
-      "https://netless.vercel.app", // Vercel 도메인 직접 추가
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
@@ -46,7 +45,12 @@ app.use(
     secret: cookieEncryptionKey,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 }, // 1시간
+    cookie: {
+      maxAge: 1000 * 60 * 60, // 1시간
+      sameSite: "none", // 크로스 사이트 쿠키 허용
+      secure: true, // HTTPS에서만 쿠키 전송
+      httpOnly: true, // JavaScript에서 쿠키 접근 방지
+    },
   })
 );
 
