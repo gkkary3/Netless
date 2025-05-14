@@ -9,6 +9,7 @@ const User = require("./models/users.model");
 const passport = require("passport");
 // const cookieSession = require("cookie-session");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 
 const config = require("config");
 const mainRouter = require("./routes/main.router");
@@ -47,6 +48,10 @@ app.use(
     secret: cookieEncryptionKey,
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URI,
+      collectionName: "sessions",
+    }),
     cookie: {
       maxAge: 1000 * 60 * 60, // 1시간
       sameSite: "none", // 크로스 사이트 쿠키 허용
