@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://netless-production.up.railway.app/api/$1"
+    }
+  ]
+}
