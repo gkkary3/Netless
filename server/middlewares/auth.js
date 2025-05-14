@@ -21,7 +21,7 @@ function checkAuthenticated(req, res, next) {
   }
 
   // 웹 요청인 경우 리디렉션
-  res.redirect(process.env.CLIENT_URL || "https://netless.vercel.app/login");
+  res.redirect(process.env.CLIENT_URL || "https://www.kkary.com/login");
 }
 
 function checkNotAuthenticated(req, res, next) {
