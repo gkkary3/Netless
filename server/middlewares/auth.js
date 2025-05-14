@@ -7,21 +7,21 @@ function checkAuthenticated(req, res, next) {
     return next();
   }
 
-  // JSON API 요청인 경우 JSON 응답 반환
-  if (
-    req.xhr ||
-    req.headers.accept === "application/json" ||
-    req.headers["content-type"]?.includes("application/json") ||
-    req.headers["content-type"]?.includes("multipart/form-data")
-  ) {
-    return res.status(401).json({
-      success: false,
-      message: "인증이 필요합니다. 로그인 후 다시 시도해주세요.",
-    });
-  }
+  // // JSON API 요청인 경우 JSON 응답 반환
+  // if (
+  //   req.xhr ||
+  //   req.headers.accept === "application/json" ||
+  //   req.headers["content-type"]?.includes("application/json") ||
+  //   req.headers["content-type"]?.includes("multipart/form-data")
+  // ) {
+  //   return res.status(401).json({
+  //     success: false,
+  //     message: "인증이 필요합니다. 로그인 후 다시 시도해주세요.",
+  //   });
+  // }
 
-  // 웹 요청인 경우 리디렉션
-  res.redirect(process.env.CLIENT_URL || "https://netless.vercel.app/login");
+  // // 웹 요청인 경우 리디렉션
+  // res.redirect(process.env.CLIENT_URL || "https://netless.vercel.app/login");
 }
 
 function checkNotAuthenticated(req, res, next) {

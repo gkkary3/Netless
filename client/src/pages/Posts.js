@@ -21,16 +21,6 @@ const Posts = () => {
   // API 기본 URL
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
-  useEffect(() => {
-    // 페이지 로드 시 로그인 상태 확인
-    if (!user || !user._id) {
-      // 로그인되지 않은 경우 로그인 페이지로 리다이렉션
-      navigate("/login");
-      return;
-    }
-
-    fetchData();
-  }, [user, navigate]);
   // 게시물과 친구 정보 가져오기
   const fetchData = async () => {
     setLoading(true);
