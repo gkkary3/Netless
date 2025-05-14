@@ -26,7 +26,7 @@ require("dotenv").config();
 require("./config/passport");
 
 const cookieEncryptionKey = process.env.SESSION_SECRET;
-
+app.set("trust proxy", 1);
 // 미들웨어 설정
 app.use(
   cors({
