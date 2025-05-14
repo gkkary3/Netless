@@ -28,6 +28,9 @@ const Posts = () => {
       // 모든 게시물 가져오기
       const postsResponse = await fetch(`${API_URL}/posts`, {
         credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
       });
 
       if (!postsResponse.ok) {
@@ -237,7 +240,7 @@ const Posts = () => {
                         {recommendedPosts.map((post, index) => (
                           <div
                             key={`recommended-${post._id}`}
-                            className="flex-shrink-0 w-full snap-center px-2"
+                            className="flex-shrink-0 w-full px-2 snap-center"
                             style={{ minWidth: "100%" }}
                           >
                             <div className="mb-1 text-center">
