@@ -1,10 +1,74 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { createPortal } from "react-dom";
 import PostItem from "../components/PostItem";
 import Header from "../components/Header";
 import { toast } from "react-toastify";
+
+// 로딩 스피너 컴포넌트
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-8">
+    <div className="w-10 h-10 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600"></div>
+  </div>
+);
+
+// 프로필 스켈레톤 컴포넌트
+const ProfileSkeleton = () => (
+  <div className="p-6 bg-white rounded-lg shadow animate-pulse">
+    <div className="flex flex-col items-center">
+      <div className="self-end w-16 h-6 mb-2 bg-gray-200 rounded-full"></div>
+      <div className="w-20 h-20 bg-gray-200 rounded-full"></div>
+      <div className="w-40 h-6 mt-3 bg-gray-200 rounded"></div>
+      <div className="w-32 h-4 mt-2 bg-gray-200 rounded"></div>
+      <div className="w-full h-16 px-1 py-2 mt-2 bg-gray-100 border-t border-b border-gray-100"></div>
+      <div className="flex justify-center mt-4 space-x-2">
+        <div className="w-24 h-8 bg-gray-200 rounded-full"></div>
+        <div className="w-24 h-8 bg-gray-200 rounded-full"></div>
+      </div>
+    </div>
+  </div>
+);
+
+// 게시물 스켈레톤 컴포넌트
+const PostsSkeleton = () => (
+  <div className="space-y-4">
+    {[1, 2, 3].map((i) => (
+      <div key={i} className="p-4 bg-white rounded-lg shadow animate-pulse">
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+          <div className="w-1/2 h-4 bg-gray-200 rounded"></div>
+        </div>
+        <div className="h-24 mt-3 bg-gray-100 rounded"></div>
+        <div className="flex mt-3 space-x-3">
+          <div className="w-20 h-6 bg-gray-200 rounded"></div>
+          <div className="w-20 h-6 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+// 친구 목록 스켈레톤 컴포넌트
+const FriendsListSkeleton = () => (
+  <div className="space-y-3">
+    {[1, 2, 3].map((i) => (
+      <div
+        key={i}
+        className="flex items-center justify-between py-3 animate-pulse"
+      >
+        <div className="flex items-center">
+          <div className="w-10 h-10 mr-3 bg-gray-200 rounded-full"></div>
+          <div>
+            <div className="w-32 h-5 bg-gray-200 rounded"></div>
+            <div className="w-24 h-3 mt-1 bg-gray-100 rounded"></div>
+          </div>
+        </div>
+        <div className="w-16 h-6 bg-gray-200 rounded-full"></div>
+      </div>
+    ))}
+  </div>
+);
 
 const MyFeed = () => {
   const [posts, setPosts] = useState([]);
@@ -486,74 +550,76 @@ const MyFeed = () => {
           </div>
 
           <div className="p-4">
-            {loading ? (
-              <div className="flex justify-center py-8">
-                <div className="text-gray-500">로딩 중...</div>
-              </div>
-            ) : users.length > 0 ? (
-              <ul className="divide-y">
-                {users.map((user) => (
-                  <li
-                    key={user._id}
-                    className="flex items-center justify-between py-3"
-                  >
-                    <div
-                      className="flex items-center cursor-pointer"
-                      onClick={() => {
-                        navigate(`/feed/${user._id}`);
-                        setShowFriendModal(false);
-                      }}
+            <Suspense fallback={<FriendsListSkeleton />}>
+              {loading ? (
+                <FriendsListSkeleton />
+              ) : users.length > 0 ? (
+                <ul className="divide-y">
+                  {users.map((user) => (
+                    <li
+                      key={user._id}
+                      className="flex items-center justify-between py-3"
                     >
-                      <div className="flex items-center justify-center w-10 h-10 mr-3 overflow-hidden bg-gray-200 rounded-full">
-                        {user.profileImage ? (
-                          <img
-                            src={`${API_URL}/assets/profiles/${user.profileImage}`}
-                            alt={user.username || "프로필"}
-                            className="object-cover w-full h-full"
-                          />
-                        ) : (
-                          <div className="flex items-center justify-center w-full h-full text-lg font-semibold text-gray-600">
-                            {user.username
-                              ? user.username.charAt(0).toUpperCase()
-                              : "?"}
-                          </div>
-                        )}
+                      <div
+                        className="flex items-center cursor-pointer"
+                        onClick={() => {
+                          navigate(`/feed/${user._id}`);
+                          setShowFriendModal(false);
+                        }}
+                      >
+                        <div className="flex items-center justify-center w-10 h-10 mr-3 overflow-hidden bg-gray-200 rounded-full">
+                          {user.profileImage ? (
+                            <img
+                              src={`${API_URL}/assets/profiles/${user.profileImage}`}
+                              alt={user.username || "프로필"}
+                              className="object-cover w-full h-full"
+                            />
+                          ) : (
+                            <div className="flex items-center justify-center w-full h-full text-lg font-semibold text-gray-600">
+                              {user.username
+                                ? user.username.charAt(0).toUpperCase()
+                                : "?"}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-medium">{user.username}</h3>
+                          {user.introduction && (
+                            <p className="text-xs text-gray-500 truncate max-w-[200px]">
+                              {user.introduction}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-medium">{user.username}</h3>
-                        {user.introduction && (
-                          <p className="text-xs text-gray-500 truncate max-w-[200px]">
-                            {user.introduction}
-                          </p>
-                        )}
-                      </div>
-                    </div>
 
-                    {modalType === "requests" && (
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => handleAcceptFriendRequest(user._id)}
-                          className="px-3 py-1 text-xs text-white bg-blue-500 rounded hover:bg-blue-600"
-                        >
-                          수락
-                        </button>
-                        <button
-                          onClick={() => handleRejectFriendRequest(user._id)}
-                          className="px-3 py-1 text-xs text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
-                        >
-                          거절
-                        </button>
-                      </div>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="py-8 text-center">
-                {modalType === "friends" && <p>아직 친구가 없습니다.</p>}
-                {modalType === "requests" && <p>받은 친구 요청이 없습니다.</p>}
-              </div>
-            )}
+                      {modalType === "requests" && (
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleAcceptFriendRequest(user._id)}
+                            className="px-3 py-1 text-xs text-white bg-blue-500 rounded hover:bg-blue-600"
+                          >
+                            수락
+                          </button>
+                          <button
+                            onClick={() => handleRejectFriendRequest(user._id)}
+                            className="px-3 py-1 text-xs text-gray-700 bg-gray-200 rounded hover:bg-gray-300"
+                          >
+                            거절
+                          </button>
+                        </div>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="py-8 text-center">
+                  {modalType === "friends" && <p>아직 친구가 없습니다.</p>}
+                  {modalType === "requests" && (
+                    <p>받은 친구 요청이 없습니다.</p>
+                  )}
+                </div>
+              )}
+            </Suspense>
           </div>
         </div>
       </div>,
@@ -578,14 +644,6 @@ const MyFeed = () => {
     };
   };
 
-  if (loading && posts.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-xl">로딩 중...</div>
-      </div>
-    );
-  }
-
   const profile = getProfileInfo();
 
   return (
@@ -604,122 +662,21 @@ const MyFeed = () => {
           {/* 프로필 및 친구 정보 사이드바 */}
           <div className="w-full mb-6 md:w-1/4 md:mb-0">
             {/* 프로필 카드 */}
-            <div className="p-6 bg-white rounded-lg shadow">
-              <div className="flex flex-col items-center">
-                {/* 메인 피드로 돌아가기 버튼 (상단에 배치) */}
-                <button
-                  onClick={() => navigate("/posts")}
-                  className="self-end px-2 py-1 mb-2 text-xs text-blue-600 transition-colors border border-blue-200 rounded-full bg-blue-50 hover:bg-blue-100"
-                >
-                  <span className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="w-3 h-3 mr-1"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                      />
-                    </svg>
-                    메인 피드
-                  </span>
-                </button>
-
-                {/* 프로필 이미지 */}
-                <div className="relative w-20 h-20 overflow-hidden bg-gray-200 rounded-full">
-                  {profile.profileImage ? (
-                    <img
-                      src={`${API_URL}/assets/profiles/${profile.profileImage}`}
-                      alt={profile.username}
-                      className="object-cover w-full h-full"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center w-full h-full text-3xl font-semibold text-gray-500">
-                      {profile.username.charAt(0).toUpperCase()}
-                    </div>
-                  )}
-                </div>
-
-                {/* 사용자 이름 */}
-                <h2 className="mt-3 text-xl font-bold text-center">
-                  {profile.username}
-                </h2>
-
-                {/* 친구 상태 배지 추가 */}
-                {!isOwnFeed && friendInfo.isFriend && (
-                  <div className="flex justify-center mt-1">
-                    <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-3 h-3 mr-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                        />
-                      </svg>
-                      친구
-                    </span>
-                  </div>
-                )}
-
-                {/* 소개글 */}
-                {profile.introduction ? (
-                  <p className="px-1 py-2 mt-2 text-sm text-center text-gray-600 border-t border-b border-gray-100">
-                    {profile.introduction}
-                  </p>
-                ) : (
-                  <p className="px-1 py-2 mt-2 text-sm italic text-center text-gray-400 border-t border-b border-gray-100">
-                    {isOwnFeed
-                      ? "소개글이 없습니다."
-                      : `${profile.username}님의 소개글이 없습니다.`}
-                  </p>
-                )}
-
-                {/* 친구 정보 - 심플하게 개선 */}
-                {isOwnFeed ? (
-                  <div className="flex items-center justify-center mt-4 space-x-2">
+            <Suspense fallback={<ProfileSkeleton />}>
+              {loading ? (
+                <ProfileSkeleton />
+              ) : (
+                <div className="p-6 bg-white rounded-lg shadow">
+                  <div className="flex flex-col items-center">
+                    {/* 메인 피드로 돌아가기 버튼 (상단에 배치) */}
                     <button
-                      onClick={() => openFriendModal("friends")}
-                      className="flex items-center px-3 py-1.5 text-sm bg-gray-100 rounded-full hover:bg-gray-200"
-                      title="친구 목록"
+                      onClick={() => navigate("/posts")}
+                      className="self-end px-2 py-1 mb-2 text-xs text-blue-600 transition-colors border border-blue-200 rounded-full bg-blue-50 hover:bg-blue-100"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-5 h-5 mr-1 text-blue-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                        />
-                      </svg>
-                      친구 ({friendInfo.friends.length})
-                    </button>
-
-                    {friendInfo.friendRequests.length > 0 && (
-                      <button
-                        onClick={() => openFriendModal("requests")}
-                        className="flex items-center px-3 py-1.5 text-sm bg-orange-100 rounded-full hover:bg-orange-200"
-                        title="친구 요청"
-                      >
+                      <span className="flex items-center">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
-                          className="w-5 h-5 mr-1 text-orange-600"
+                          className="w-3 h-3 mr-1"
                           fill="none"
                           viewBox="0 0 24 24"
                           stroke="currentColor"
@@ -728,25 +685,40 @@ const MyFeed = () => {
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeWidth={2}
-                            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                            d="M10 19l-7-7m0 0l7-7m-7 7h18"
                           />
                         </svg>
-                        요청 ({friendInfo.friendRequests.length})
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex justify-center mt-4 space-x-2">
-                    {friendInfo.isFriend ? (
-                      <>
-                        <button
-                          onClick={handleRemoveFriend}
-                          className="flex items-center px-3 py-1.5 text-sm bg-red-100 rounded-full hover:bg-red-200"
-                          title="친구 삭제"
-                        >
+                        메인 피드
+                      </span>
+                    </button>
+
+                    {/* 프로필 이미지 */}
+                    <div className="relative w-20 h-20 overflow-hidden bg-gray-200 rounded-full">
+                      {profile.profileImage ? (
+                        <img
+                          src={`${API_URL}/assets/profiles/${profile.profileImage}`}
+                          alt={profile.username}
+                          className="object-cover w-full h-full"
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center w-full h-full text-3xl font-semibold text-gray-500">
+                          {profile.username.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 사용자 이름 */}
+                    <h2 className="mt-3 text-xl font-bold text-center">
+                      {profile.username}
+                    </h2>
+
+                    {/* 친구 상태 배지 추가 */}
+                    {!isOwnFeed && friendInfo.isFriend && (
+                      <div className="flex justify-center mt-1">
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full">
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
-                            className="w-5 h-5 mr-1 text-red-600"
+                            className="w-3 h-3 mr-1"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -755,106 +727,204 @@ const MyFeed = () => {
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth={2}
-                              d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"
+                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
                             />
                           </svg>
-                          친구 삭제
-                        </button>
-                      </>
-                    ) : friendInfo.hasReceivedRequest ? (
-                      <button
-                        onClick={() => handleAcceptFriendRequest(targetUserId)}
-                        className="flex items-center px-3 py-1.5 text-sm bg-green-100 rounded-full hover:bg-green-200"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-5 h-5 mr-1 text-green-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                        친구 요청 수락
-                      </button>
-                    ) : friendInfo.hasSentRequest ? (
-                      <button
-                        onClick={() => handleCancelFriendRequest(targetUserId)}
-                        className="flex items-center px-3 py-1.5 text-sm bg-gray-100 rounded-full hover:bg-gray-200"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-5 h-5 mr-1 text-gray-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M6 18L18 6M6 6l12 12"
-                          />
-                        </svg>
-                        요청 취소
-                      </button>
+                          친구
+                        </span>
+                      </div>
+                    )}
+
+                    {/* 소개글 */}
+                    {profile.introduction ? (
+                      <p className="px-1 py-2 mt-2 text-sm text-center text-gray-600 border-t border-b border-gray-100">
+                        {profile.introduction}
+                      </p>
                     ) : (
-                      <button
-                        onClick={() => handleSendFriendRequest(targetUserId)}
-                        className="flex items-center px-3 py-1.5 text-sm bg-blue-100 rounded-full hover:bg-blue-200"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="w-5 h-5 mr-1 text-blue-600"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
+                      <p className="px-1 py-2 mt-2 text-sm italic text-center text-gray-400 border-t border-b border-gray-100">
+                        {isOwnFeed
+                          ? "소개글이 없습니다."
+                          : `${profile.username}님의 소개글이 없습니다.`}
+                      </p>
+                    )}
+
+                    {/* 친구 정보 - 심플하게 개선 */}
+                    {isOwnFeed ? (
+                      <div className="flex items-center justify-center mt-4 space-x-2">
+                        <button
+                          onClick={() => openFriendModal("friends")}
+                          className="flex items-center px-3 py-1.5 text-sm bg-gray-100 rounded-full hover:bg-gray-200"
+                          title="친구 목록"
                         >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                          />
-                        </svg>
-                        친구 요청
-                      </button>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-5 h-5 mr-1 text-blue-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                            />
+                          </svg>
+                          친구 ({friendInfo.friends.length})
+                        </button>
+
+                        {friendInfo.friendRequests.length > 0 && (
+                          <button
+                            onClick={() => openFriendModal("requests")}
+                            className="flex items-center px-3 py-1.5 text-sm bg-orange-100 rounded-full hover:bg-orange-200"
+                            title="친구 요청"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-5 h-5 mr-1 text-orange-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                              />
+                            </svg>
+                            요청 ({friendInfo.friendRequests.length})
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="flex justify-center mt-4 space-x-2">
+                        {friendInfo.isFriend ? (
+                          <>
+                            <button
+                              onClick={handleRemoveFriend}
+                              className="flex items-center px-3 py-1.5 text-sm bg-red-100 rounded-full hover:bg-red-200"
+                              title="친구 삭제"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-5 h-5 mr-1 text-red-600"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"
+                                />
+                              </svg>
+                              친구 삭제
+                            </button>
+                          </>
+                        ) : friendInfo.hasReceivedRequest ? (
+                          <button
+                            onClick={() =>
+                              handleAcceptFriendRequest(targetUserId)
+                            }
+                            className="flex items-center px-3 py-1.5 text-sm bg-green-100 rounded-full hover:bg-green-200"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-5 h-5 mr-1 text-green-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                            친구 요청 수락
+                          </button>
+                        ) : friendInfo.hasSentRequest ? (
+                          <button
+                            onClick={() =>
+                              handleCancelFriendRequest(targetUserId)
+                            }
+                            className="flex items-center px-3 py-1.5 text-sm bg-gray-100 rounded-full hover:bg-gray-200"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-5 h-5 mr-1 text-gray-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                            요청 취소
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() =>
+                              handleSendFriendRequest(targetUserId)
+                            }
+                            className="flex items-center px-3 py-1.5 text-sm bg-blue-100 rounded-full hover:bg-blue-200"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-5 h-5 mr-1 text-blue-600"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+                              />
+                            </svg>
+                            친구 요청
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    {/* 친구 수 표시 */}
+                    {!isOwnFeed && (
+                      <div className="mt-3 text-center text-gray-500">
+                        <button
+                          onClick={() => openFriendModal("friends")}
+                          className="flex items-center justify-center text-sm transition-colors hover:text-blue-600 hover:underline"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="w-4 h-4 mr-1 text-blue-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                            />
+                          </svg>
+                          친구 {profileUser?.friendsCount || 0}명
+                        </button>
+                      </div>
                     )}
                   </div>
-                )}
-
-                {/* 친구 수 표시 */}
-                {!isOwnFeed && (
-                  <div className="mt-3 text-center text-gray-500">
-                    <button
-                      onClick={() => openFriendModal("friends")}
-                      className="flex items-center justify-center text-sm transition-colors hover:text-blue-600 hover:underline"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="w-4 h-4 mr-1 text-blue-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                        />
-                      </svg>
-                      친구 {profileUser?.friendsCount || 0}명
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
+                </div>
+              )}
+            </Suspense>
 
             {/* 알 수도 있는 사람 섹션 - 프로필 카드 다음에 따로 배치 */}
             {isOwnFeed && suggestedPeople.length > 0 && (
@@ -862,55 +932,55 @@ const MyFeed = () => {
                 <h3 className="mb-4 text-lg font-semibold">
                   알 수도 있는 사람
                 </h3>
-                {loadingSuggestions ? (
-                  <div className="flex justify-center py-4">
-                    <div className="w-6 h-6 border-2 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {suggestedPeople.map((person) => (
-                      <div
-                        key={person._id}
-                        className="flex items-center justify-between"
-                      >
-                        <div className="flex items-center">
-                          <div className="flex items-center justify-center w-10 h-10 mr-3 overflow-hidden bg-gray-200 rounded-full">
-                            {person.profileImage ? (
-                              <img
-                                src={`${API_URL}/assets/profiles/${person.profileImage}`}
-                                alt={person.username}
-                                className="object-cover w-full h-full"
-                              />
-                            ) : (
-                              <div className="text-xl font-semibold text-gray-500">
-                                {person.username.charAt(0).toUpperCase()}
-                              </div>
-                            )}
-                          </div>
-                          <div>
-                            <div
-                              className="font-medium cursor-pointer hover:text-blue-600"
-                              onClick={() => navigate(`/feed/${person._id}`)}
-                            >
-                              {person.username}
-                            </div>
-                            {person.introduction && (
-                              <p className="text-xs text-gray-500 truncate max-w-[150px]">
-                                {person.introduction}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => handleSendFriendRequest(person._id)}
-                          className="px-3 py-1 text-xs text-blue-600 border border-blue-500 rounded-full hover:bg-blue-50"
+                <Suspense fallback={<FriendsListSkeleton />}>
+                  {loadingSuggestions ? (
+                    <FriendsListSkeleton />
+                  ) : (
+                    <div className="space-y-4">
+                      {suggestedPeople.map((person) => (
+                        <div
+                          key={person._id}
+                          className="flex items-center justify-between"
                         >
-                          친구 추가
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                          <div className="flex items-center">
+                            <div className="flex items-center justify-center w-10 h-10 mr-3 overflow-hidden bg-gray-200 rounded-full">
+                              {person.profileImage ? (
+                                <img
+                                  src={`${API_URL}/assets/profiles/${person.profileImage}`}
+                                  alt={person.username}
+                                  className="object-cover w-full h-full"
+                                />
+                              ) : (
+                                <div className="text-xl font-semibold text-gray-500">
+                                  {person.username.charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div
+                                className="font-medium cursor-pointer hover:text-blue-600"
+                                onClick={() => navigate(`/feed/${person._id}`)}
+                              >
+                                {person.username}
+                              </div>
+                              {person.introduction && (
+                                <p className="text-xs text-gray-500 truncate max-w-[150px]">
+                                  {person.introduction}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleSendFriendRequest(person._id)}
+                            className="px-3 py-1 text-xs text-blue-600 border border-blue-500 rounded-full hover:bg-blue-50"
+                          >
+                            친구 추가
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Suspense>
               </div>
             )}
           </div>
@@ -925,38 +995,44 @@ const MyFeed = () => {
               </div>
             </div>
 
-            {posts.length === 0 ? (
-              <div className="w-full p-8 py-10 text-center bg-white rounded-lg shadow-md">
-                <p className="mb-4 text-xl text-gray-500">게시물이 없습니다.</p>
-                {isOwnFeed ? (
-                  <button
-                    onClick={() => navigate("/posts")}
-                    className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
-                  >
-                    메인 피드에서 게시물 작성하기
-                  </button>
-                ) : (
-                  <p className="text-gray-600">
-                    {profile.username}님이 아직 게시물을 작성하지 않았습니다.
+            <Suspense fallback={<PostsSkeleton />}>
+              {loading ? (
+                <PostsSkeleton />
+              ) : posts.length === 0 ? (
+                <div className="w-full p-8 py-10 text-center bg-white rounded-lg shadow-md">
+                  <p className="mb-4 text-xl text-gray-500">
+                    게시물이 없습니다.
                   </p>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {posts.map((post) => (
-                  <PostItem
-                    key={`feed-${post._id}`}
-                    post={post}
-                    onDeletePost={handleDeletePost}
-                    onUpdatePost={handleUpdatePost}
-                  />
-                ))}
-              </div>
-            )}
+                  {isOwnFeed ? (
+                    <button
+                      onClick={() => navigate("/posts")}
+                      className="px-4 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                    >
+                      메인 피드에서 게시물 작성하기
+                    </button>
+                  ) : (
+                    <p className="text-gray-600">
+                      {profile.username}님이 아직 게시물을 작성하지 않았습니다.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {posts.map((post) => (
+                    <PostItem
+                      key={`feed-${post._id}`}
+                      post={post}
+                      onDeletePost={handleDeletePost}
+                      onUpdatePost={handleUpdatePost}
+                    />
+                  ))}
+                </div>
+              )}
+            </Suspense>
 
-            {loading && (
+            {loading && posts.length > 0 && (
               <div className="py-4 text-center">
-                <div className="text-gray-500">게시물 로딩 중...</div>
+                <LoadingSpinner />
               </div>
             )}
           </div>

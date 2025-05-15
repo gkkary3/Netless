@@ -57,8 +57,13 @@ app.use(
     }),
     cookie: {
       maxAge: 1000 * 60 * 60, // 1시간
-      sameSite: "none", // 크로스 사이트 쿠키 허용
-      secure: true, // HTTPS에서만 쿠키 전송
+      // 개발 환경
+      sameSite: "lax", // 크로스 사이트 쿠키 허용
+      secure: false, // HTTPS에서만 쿠키 전송
+
+      // 배포 환경
+      // sameSite: "none", // 크로스 사이트 쿠키 허용
+      // secure: true, // HTTPS에서만 쿠키 전송
       httpOnly: true, // JavaScript에서 쿠키 접근 방지
     },
   })

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -23,6 +23,10 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [profileUser, setProfileUser] = useState(null);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  // 슬라이더 관련 추가 상태 및 refs
+  const sliderScrollRef = useRef(null);
+  const isManualScrollingRef = useRef(false);
+  const touchStartXRef = useRef(0);
 
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
   const { user } = useAuth();
@@ -158,20 +162,46 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
     }
   };
 
+  // 중앙 통제 함수 - 슬라이드 이동
+  const goToSlide = (index) => {
+    if (!sliderScrollRef.current || !post.images || post.images.length <= 1)
+      return;
+
+    // 유효한 인덱스로 제한
+    const safeIndex = Math.max(0, Math.min(index, post.images.length - 1));
+    setCurrentImageIndex(safeIndex);
+
+    // 스크롤이 사용자에 의한 것임을 표시
+    isManualScrollingRef.current = true;
+
+    // 슬라이더 이동
+    const slideWidth = sliderScrollRef.current.offsetWidth;
+    sliderScrollRef.current.scrollTo({
+      left: safeIndex * slideWidth,
+      behavior: "smooth",
+    });
+
+    // 500ms 후에 수동 스크롤 플래그 해제
+    setTimeout(() => {
+      isManualScrollingRef.current = false;
+    }, 500);
+  };
+
   // 이미지 갤러리 컨트롤
   const nextImage = (e) => {
     e.stopPropagation(); // 이벤트 버블링 방지
     if (post.images && post.images.length > 1) {
-      setCurrentImageIndex((prev) => (prev + 1) % post.images.length);
+      const nextIndex = (currentImageIndex + 1) % post.images.length;
+      goToSlide(nextIndex);
     }
   };
 
   const prevImage = (e) => {
     e.stopPropagation(); // 이벤트 버블링 방지
     if (post.images && post.images.length > 1) {
-      setCurrentImageIndex(
-        (prev) => (prev - 1 + post.images.length) % post.images.length
-      );
+      const prevIndex =
+        (currentImageIndex - 1 + post.images.length) % post.images.length;
+      goToSlide(prevIndex);
     }
   };
 
@@ -202,7 +232,75 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
     }
   };
 
-  React.useEffect(() => {
+  // 스크롤 이벤트 감지 설정
+  useEffect(() => {
+    const slider = sliderScrollRef.current;
+    if (!slider || !post.images || post.images.length <= 1) return;
+
+    let scrollTimeout;
+
+    // 스크롤 이벤트 핸들러
+    const handleScroll = () => {
+      // 수동 스크롤 중이면 무시
+      if (isManualScrollingRef.current) return;
+
+      // 이전 타이머 취소
+      clearTimeout(scrollTimeout);
+
+      // 스크롤이 멈춘 후 처리
+      scrollTimeout = setTimeout(() => {
+        const slideWidth = slider.offsetWidth;
+        if (slideWidth <= 0) return;
+
+        const scrollPosition = slider.scrollLeft;
+        const newSlideIndex = Math.round(scrollPosition / slideWidth);
+
+        // 유효 범위 내에서만 상태 업데이트
+        if (
+          newSlideIndex >= 0 &&
+          newSlideIndex < post.images.length &&
+          newSlideIndex !== currentImageIndex
+        ) {
+          setCurrentImageIndex(newSlideIndex);
+        }
+      }, 150);
+    };
+
+    // 터치 이벤트 핸들러 - 모바일용
+    const handleTouchStart = (e) => {
+      touchStartXRef.current = e.touches[0].clientX;
+    };
+
+    const handleTouchEnd = (e) => {
+      // 터치 종료 시 현재 슬라이드 인덱스 확인
+      const slideWidth = slider.offsetWidth;
+      if (slideWidth <= 0) return;
+
+      const scrollPosition = slider.scrollLeft;
+      const newSlideIndex = Math.round(scrollPosition / slideWidth);
+
+      if (
+        newSlideIndex >= 0 &&
+        newSlideIndex < post.images.length &&
+        newSlideIndex !== currentImageIndex
+      ) {
+        setCurrentImageIndex(newSlideIndex);
+      }
+    };
+
+    slider.addEventListener("scroll", handleScroll);
+    slider.addEventListener("touchstart", handleTouchStart);
+    slider.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      slider.removeEventListener("scroll", handleScroll);
+      slider.removeEventListener("touchstart", handleTouchStart);
+      slider.removeEventListener("touchend", handleTouchEnd);
+      clearTimeout(scrollTimeout);
+    };
+  }, [post.images, currentImageIndex]);
+
+  useEffect(() => {
     document.addEventListener("click", handleClickOutside);
     return () => {
       document.removeEventListener("click", handleClickOutside);
@@ -505,11 +603,29 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
               }`}
               onClick={openImageModal}
             >
-              <img
-                src={`${API_URL}/assets/images/${post.images[currentImageIndex]}`}
-                alt={`게시물 이미지 ${currentImageIndex + 1}`}
-                className="object-cover w-full h-full"
-              />
+              {/* 이미지 슬라이더 - 수평 스크롤 방식 */}
+              <div
+                ref={sliderScrollRef}
+                className="flex w-full h-full overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+                style={{
+                  scrollbarWidth: "none",
+                  msOverflowStyle: "none",
+                }}
+              >
+                {post.images.map((image, idx) => (
+                  <div
+                    key={`slide-${idx}`}
+                    className="flex-shrink-0 w-full h-full snap-center"
+                    style={{ minWidth: "100%" }}
+                  >
+                    <img
+                      src={`${API_URL}/assets/images/${image}`}
+                      alt={`게시물 이미지 ${idx + 1}`}
+                      className="object-cover w-full h-full"
+                    />
+                  </div>
+                ))}
+              </div>
 
               {/* 이미지가 여러 개인 경우에만 컨트롤 표시 */}
               {post.images.length > 1 && !isCompact && (
@@ -559,14 +675,14 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
                     {post.images.map((_, index) => (
                       <div
                         key={index}
-                        className={`h-3 w-3 mx-1 rounded-full ${
+                        className={`h-3 w-3 mx-1 rounded-full cursor-pointer ${
                           index === currentImageIndex
                             ? "bg-white"
                             : "bg-gray-400 bg-opacity-70"
                         }`}
                         onClick={(e) => {
                           e.stopPropagation();
-                          setCurrentImageIndex(index);
+                          goToSlide(index);
                         }}
                       />
                     ))}
@@ -831,6 +947,24 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
                   {/* 이미지 카운터 */}
                   <div className="absolute left-0 right-0 text-center text-white bottom-4">
                     {currentImageIndex + 1} / {post.images.length}
+                  </div>
+
+                  {/* 인디케이터 점 */}
+                  <div className="absolute left-0 right-0 flex justify-center bottom-10">
+                    {post.images.map((_, index) => (
+                      <div
+                        key={`modal-dot-${index}`}
+                        className={`h-3 w-3 mx-1 rounded-full cursor-pointer ${
+                          index === currentImageIndex
+                            ? "bg-white"
+                            : "bg-gray-400 bg-opacity-70"
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          goToSlide(index);
+                        }}
+                      />
+                    ))}
                   </div>
                 </>
               )}

@@ -69,8 +69,10 @@ usersRouter.get("/google", passport.authenticate("google"));
 usersRouter.get(
   "/google/callback",
   passport.authenticate("google", {
-    successReturnToOrRedirect: process.env.CLIENT_URL + "/posts",
-    failureRedirect: process.env.CLIENT_URL + "/login",
+    successReturnToOrRedirect:
+      process.env.CLIENT_URL || "http://localhost:3000" + "/posts",
+    failureRedirect:
+      process.env.CLIENT_URL || "http://localhost:3000" + "/login",
   })
 );
 
@@ -79,8 +81,10 @@ usersRouter.get("/kakao", passport.authenticate("kakao"));
 usersRouter.get(
   "/kakao/callback",
   passport.authenticate("kakao", {
-    successReturnToOrRedirect: process.env.CLIENT_URL + "/posts",
-    failureRedirect: process.env.CLIENT_URL + "/login",
+    successReturnToOrRedirect:
+      process.env.CLIENT_URL || "http://localhost:3000" + "/posts",
+    failureRedirect:
+      process.env.CLIENT_URL || "http://localhost:3000" + "/login",
   })
 );
 module.exports = usersRouter;

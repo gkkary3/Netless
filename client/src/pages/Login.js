@@ -1,14 +1,65 @@
-import React, { useState } from "react";
+import React, { useState, Suspense } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
+// 로딩 스피너 컴포넌트
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center">
+    <div className="w-8 h-8 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600"></div>
+  </div>
+);
+
+// 로그인 폼 스켈레톤
+const LoginFormSkeleton = () => (
+  <div className="w-full max-w-md p-8 space-y-8 bg-white border border-indigo-100 shadow-xl rounded-xl animate-pulse">
+    <div className="flex flex-col items-center">
+      <div className="w-40 h-12 bg-gray-200 rounded"></div>
+      <div className="w-32 h-4 mt-2 bg-gray-100 rounded"></div>
+    </div>
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <div className="w-full h-10 bg-gray-200 rounded-md"></div>
+        <div className="w-full h-10 bg-gray-200 rounded-md"></div>
+      </div>
+      <div className="w-full h-10 bg-blue-200 rounded-md"></div>
+
+      <div className="mt-6">
+        <div className="relative flex justify-center mb-6">
+          <div className="w-full border-t border-gray-300"></div>
+          <div className="absolute px-2 bg-white">
+            <div className="w-40 h-4 bg-gray-100 rounded"></div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="w-full h-10 bg-gray-100 rounded-md"></div>
+          <div className="w-full h-10 bg-yellow-100 rounded-md"></div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="w-20 h-4 bg-indigo-100 rounded"></div>
+      </div>
+    </div>
+  </div>
+);
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
   const { login, error } = useAuth();
   const navigate = useNavigate();
+
+  // 페이지 로딩 시뮬레이션 (실제로는 필요 없을 수 있음)
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,126 +81,139 @@ const Login = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen px-4 py-12 bg-gradient-to-br from-sky-100 via-white to-indigo-100 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md p-8 space-y-8 bg-white border border-indigo-100 shadow-xl rounded-xl">
-        <div>
-          <h1 className="mt-2 text-5xl font-extrabold text-center text-transparent transition-all duration-300 transform bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-600 font-pacifico hover:scale-105">
-            Netless
-          </h1>
-          <p className="mt-2 text-sm text-center text-gray-600 font-quicksand">
-            경계 없는 소통의 시작
-          </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="-space-y-px rounded-md shadow-sm">
+      <Suspense fallback={<LoginFormSkeleton />}>
+        {isPageLoading ? (
+          <LoginFormSkeleton />
+        ) : (
+          <div className="w-full max-w-md p-8 space-y-8 bg-white border border-indigo-100 shadow-xl rounded-xl">
             <div>
-              <label htmlFor="email" className="sr-only">
-                이메일
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                required
-                className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="이메일"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <h1 className="mt-2 text-5xl font-extrabold text-center text-transparent transition-all duration-300 transform bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-600 font-pacifico hover:scale-105">
+                Netless
+              </h1>
+              <p className="mt-2 text-sm text-center text-gray-600 font-quicksand">
+                경계 없는 소통의 시작
+              </p>
             </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                비밀번호
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="비밀번호"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {error && (
-            <div className="text-sm text-center text-red-500">{error}</div>
-          )}
-
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white transition-all duration-200 border border-transparent rounded-md shadow-md group bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              {isLoading ? "로그인 중..." : "로그인"}
-            </button>
-          </div>
-
-          {/* 소셜 로그인 버튼 */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300"></div>
+            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+              <div className="-space-y-px rounded-md shadow-sm">
+                <div>
+                  <label htmlFor="email" className="sr-only">
+                    이메일
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    placeholder="이메일"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="password" className="sr-only">
+                    비밀번호
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    required
+                    className="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 bg-white border border-gray-300 rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    placeholder="비밀번호"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 text-gray-500 bg-white">
-                  소셜 계정으로 로그인
-                </span>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-3 mt-6">
+              {error && (
+                <div className="text-sm text-center text-red-500">{error}</div>
+              )}
+
               <div>
                 <button
-                  type="button"
-                  onClick={() => handleSocialLogin("google")}
-                  className="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
+                  type="submit"
+                  disabled={isLoading}
+                  className="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white transition-all duration-200 border border-transparent rounded-md shadow-md group bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                  >
-                    <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
-                  </svg>
-                  Google
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <LoadingSpinner />
+                      <span className="ml-2">로그인 중...</span>
+                    </span>
+                  ) : (
+                    "로그인"
+                  )}
                 </button>
               </div>
-              <div>
-                <button
-                  type="button"
-                  onClick={() => handleSocialLogin("kakao")}
-                  className="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-800 transition-colors duration-200 bg-yellow-300 border border-gray-300 rounded-md shadow-sm hover:bg-yellow-400"
-                >
-                  <svg
-                    className="w-5 h-5 mr-2"
-                    viewBox="0 0 24 24"
-                    fill="currentColor"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path d="M12 3C7.0375 3 3 6.15643 3 10.0455C3 12.5652 4.67125 14.7389 7.1025 15.9031C6.93 16.5061 6.3525 18.5516 6.27 18.8531C6.27 18.8531 6.25125 19.0414 6.3675 19.1121C6.48375 19.1828 6.6525 19.1121 6.6525 19.1121C7.0725 19.0414 9.4575 17.3711 10.0312 16.952C10.6575 17.0473 11.31 17.0914 12 17.0914C16.9625 17.0914 21 13.9345 21 10.0455C21 6.15643 16.9625 3 12 3Z" />
-                  </svg>
-                  카카오
-                </button>
-              </div>
-            </div>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="text-sm">
-              <Link
-                to="/signup"
-                className="font-medium text-indigo-600 transition-colors duration-200 hover:text-indigo-700"
-              >
-                회원가입
-              </Link>
-            </div>
+              {/* 소셜 로그인 버튼 */}
+              <div className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 text-gray-500 bg-white">
+                      소셜 계정으로 로그인
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-6">
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => handleSocialLogin("google")}
+                      className="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-600 transition-colors duration-200 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50"
+                    >
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z" />
+                      </svg>
+                      Google
+                    </button>
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => handleSocialLogin("kakao")}
+                      className="inline-flex justify-center w-full px-4 py-2 text-sm font-medium text-gray-800 transition-colors duration-200 bg-yellow-300 border border-gray-300 rounded-md shadow-sm hover:bg-yellow-400"
+                    >
+                      <svg
+                        className="w-5 h-5 mr-2"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M12 3C7.0375 3 3 6.15643 3 10.0455C3 12.5652 4.67125 14.7389 7.1025 15.9031C6.93 16.5061 6.3525 18.5516 6.27 18.8531C6.27 18.8531 6.25125 19.0414 6.3675 19.1121C6.48375 19.1828 6.6525 19.1121 6.6525 19.1121C7.0725 19.0414 9.4575 17.3711 10.0312 16.952C10.6575 17.0473 11.31 17.0914 12 17.0914C16.9625 17.0914 21 13.9345 21 10.0455C21 6.15643 16.9625 3 12 3Z" />
+                      </svg>
+                      카카오
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="text-sm">
+                  <Link
+                    to="/signup"
+                    className="font-medium text-indigo-600 transition-colors duration-200 hover:text-indigo-700"
+                  >
+                    회원가입
+                  </Link>
+                </div>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
+        )}
+      </Suspense>
     </div>
   );
 };

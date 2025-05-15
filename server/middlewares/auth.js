@@ -21,7 +21,7 @@ function checkAuthenticated(req, res, next) {
   }
 
   // 웹 요청인 경우 리디렉션
-  res.redirect(process.env.CLIENT_URL || "https://www.kkary.com/login");
+  res.redirect(process.env.CLIENT_URL || "http://localhost:3000");
 }
 
 function checkNotAuthenticated(req, res, next) {
@@ -56,7 +56,7 @@ async function checkPostOwnerShip(req, res, next) {
   } else {
     req.flash("error", "로그인 후 이용해주세요!");
     console.log("로그인 후 이용해주세요!");
-    res.redirect(process.env.CLIENT_URL || "https://netless.vercel.app/login");
+    res.redirect(process.env.CLIENT_URL || "http://localhost:3000/login");
   }
 }
 
@@ -81,7 +81,7 @@ async function checkCommentOwnerShip(req, res, next) {
     }
   } else {
     req.flash("error", "로그인 후 이용해주세요!");
-    res.redirect(process.env.CLIENT_URL || "https://netless.vercel.app/login");
+    res.redirect(process.env.CLIENT_URL || "http://localhost:3000/login");
   }
 }
 
@@ -109,7 +109,7 @@ async function checkIsMe(req, res, next) {
     }
   } else {
     req.flash("error", "Please Login first!");
-    res.redirect(process.env.CLIENT_URL || "https://netless.vercel.app/login");
+    res.redirect(process.env.CLIENT_URL || "http://localhost:3000/login");
   }
 }
 module.exports = {
