@@ -6,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { SocketProvider } from "./context/SocketContext";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Posts from "./pages/Posts";
@@ -25,43 +26,65 @@ const GlobalLoadingSpinner = () => (
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Suspense fallback={<GlobalLoadingSpinner />}>
-          <Routes>
-            {/* 보호된 라우트 - 인증된 사용자만 접근 가능 */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/posts" element={<Posts />} />
-              <Route path="/my-feed" element={<MyFeed />} />
-              <Route path="/feed/:userId" element={<MyFeed />} />
-            </Route>
+      <SocketProvider>
+        <Router>
+          <Suspense fallback={<GlobalLoadingSpinner />}>
+            <Routes>
+              {/* 보호된 라우트 - 인증된 사용자만 접근 가능 */}
+              <Route element={<ProtectedRoute />}>
+                <Route path="/posts" element={<Posts />} />
+                <Route path="/my-feed" element={<MyFeed />} />
+                <Route path="/feed/:userId" element={<MyFeed />} />
+                <Route
+                  path="/messages"
+                  element={
+                    <React.Suspense fallback={<GlobalLoadingSpinner />}>
+                      <Messages />
+                    </React.Suspense>
+                  }
+                />
+                <Route
+                  path="/messages/:userId"
+                  element={
+                    <React.Suspense fallback={<GlobalLoadingSpinner />}>
+                      <MessageDetail />
+                    </React.Suspense>
+                  }
+                />
+              </Route>
 
-            {/* 공개 라우트 - 인증되지 않은 사용자만 접근 가능 */}
-            <Route element={<PublicRoute />}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-            </Route>
+              {/* 공개 라우트 - 인증되지 않은 사용자만 접근 가능 */}
+              <Route element={<PublicRoute />}>
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+              </Route>
 
-            {/* 기본 리디렉션 */}
-            <Route path="/" element={<Navigate to="/login" />} />
-          </Routes>
-        </Suspense>
+              {/* 기본 리디렉션 */}
+              <Route path="/" element={<Navigate to="/login" />} />
+            </Routes>
+          </Suspense>
 
-        {/* 토스트 알림 컨테이너 */}
-        <ToastContainer
-          position="bottom-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="light"
-        />
-      </Router>
+          {/* 토스트 알림 컨테이너 */}
+          <ToastContainer
+            position="bottom-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
+        </Router>
+      </SocketProvider>
     </AuthProvider>
   );
 }
+
+// Messages 컴포넌트와 MessageDetail 컴포넌트는 아직 생성되지 않았으므로 플레이스홀더로 작성
+const Messages = React.lazy(() => import("./pages/Messages"));
+const MessageDetail = React.lazy(() => import("./pages/MessageDetail"));
 
 export default App;

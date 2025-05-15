@@ -43,6 +43,38 @@ const userSchema = mongoose.Schema(
     },
     friends: { type: [String], default: [] },
     friendsRequests: { type: [String], default: [] },
+    // 대화 관련 필드 추가
+    conversations: [
+      {
+        with: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        lastMessage: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Message",
+        },
+        unreadCount: {
+          type: Number,
+          default: 0,
+        },
+        updatedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    // 알림 설정
+    notificationSettings: {
+      messageNotifications: {
+        type: Boolean,
+        default: true,
+      },
+      messagePreview: {
+        type: Boolean,
+        default: true,
+      },
+    },
   },
   { timestamps: true }
 );

@@ -1,18 +1,82 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
 import ProfileDropdown from "./ProfileDropdown";
 
 const Header = () => {
   const { user } = useAuth();
+  const { socket, connected } = useSocket();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const searchRef = useRef(null);
 
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+
+  // 안 읽은 메시지 개수 가져오기
+  useEffect(() => {
+    const fetchUnreadMessages = async () => {
+      try {
+        const response = await fetch(`${API_URL}/messages/conversations`, {
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const conversations = await response.json();
+          const total = conversations.reduce(
+            (sum, conv) => sum + (conv.unreadCount || 0),
+            0
+          );
+          setUnreadMessages(total);
+        }
+      } catch (error) {
+        console.error("안 읽은 메시지 조회 오류:", error);
+      }
+    };
+
+    fetchUnreadMessages();
+  }, [API_URL]);
+
+  // Socket.io 이벤트 리스너 설정
+  useEffect(() => {
+    if (!socket) return;
+
+    // 새 메시지 수신 시 안 읽은 메시지 카운트 증가
+    const handleReceiveMessage = (message) => {
+      if (message.receiver._id === user._id) {
+        setUnreadMessages((prev) => prev + 1);
+      }
+    };
+
+    // 대화가 읽음 처리되었을 때
+    const handleConversationRead = () => {
+      // 안 읽은 메시지 개수 다시 가져오기
+      fetch(`${API_URL}/messages/conversations`, {
+        credentials: "include",
+      })
+        .then((response) => response.json())
+        .then((conversations) => {
+          const total = conversations.reduce(
+            (sum, conv) => sum + (conv.unreadCount || 0),
+            0
+          );
+          setUnreadMessages(total);
+        })
+        .catch((error) => console.error("안 읽은 메시지 조회 오류:", error));
+    };
+
+    socket.on("receive_message", handleReceiveMessage);
+    socket.on("conversation_read", handleConversationRead);
+
+    return () => {
+      socket.off("receive_message", handleReceiveMessage);
+      socket.off("conversation_read", handleConversationRead);
+    };
+  }, [socket, user, API_URL]);
 
   // 검색어 변경 시 사용자 검색 실행
   useEffect(() => {
@@ -188,6 +252,32 @@ const Header = () => {
         </div>
 
         <div className="flex items-center">
+          {/* 메시지 버튼 */}
+          <Link
+            to="/messages"
+            className="relative p-2 mr-3 text-gray-700 transition-colors rounded-full hover:bg-gray-100"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-6 h-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+              />
+            </svg>
+            {unreadMessages > 0 && (
+              <span className="absolute top-0 right-0 flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-red-500 rounded-full">
+                {unreadMessages > 9 ? "9+" : unreadMessages}
+              </span>
+            )}
+          </Link>
+
           <div className="hidden mr-4 md:block">
             안녕하세요,{" "}
             <span className="font-semibold">

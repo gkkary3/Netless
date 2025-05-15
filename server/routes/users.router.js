@@ -87,4 +87,28 @@ usersRouter.get(
       process.env.CLIENT_URL || "http://localhost:3000" + "/login",
   })
 );
+
+// 개별 사용자 정보 조회 API는 마지막에 배치
+usersRouter.get("/:id", checkAuthenticated, async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // 사용자 정보 조회 (민감한 정보 제외)
+    const user = await User.findById(userId).select(
+      "-password -googleId -kakaoId"
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "사용자를 찾을 수 없습니다." });
+    }
+
+    return res.json({ user });
+  } catch (err) {
+    console.error("사용자 정보 조회 오류:", err);
+    return res
+      .status(500)
+      .json({ error: "사용자 정보를 가져오는데 실패했습니다." });
+  }
+});
+
 module.exports = usersRouter;
