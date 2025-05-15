@@ -6,11 +6,11 @@ import { useAuth } from "../context/AuthContext";
 const PublicRoute = () => {
   const { user, loading } = useAuth();
 
-  // 로딩 중일 때는 로딩 표시
+  // 로딩 중일 때는 로딩 스피너 표시
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        로딩 중...
+      <div className="flex justify-center items-center h-screen bg-gray-100">
+        <div className="w-12 h-12 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600"></div>
       </div>
     );
   }
