@@ -9,7 +9,7 @@ passport.serializeUser((user, done) => {
   done(null, user.id);
 });
 
-// client => session => request
+// client => session => request  //////
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);
