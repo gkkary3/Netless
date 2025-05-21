@@ -93,6 +93,13 @@ const kakaoStrategyConfig = new KakaoStrategy(
       const existingUser = await User.findOne({ kakaoId: profile.id });
 
       if (existingUser) {
+        if (
+          !existingUser.profileImage &&
+          profile._json.properties.profile_image
+        ) {
+          existingUser.profileImage = profile._json.properties.profile_image;
+          await existingUser.save();
+        }
         return done(null, existingUser);
       }
 
@@ -101,6 +108,10 @@ const kakaoStrategyConfig = new KakaoStrategy(
       user.kakaoId = profile.id;
       user.username =
         profile._json.properties.nickname || `Kakao_${profile.id}`;
+
+      if (profile._json.properties.profile_image) {
+        user.profileImage = profile._json.properties.profile_image;
+      }
 
       await user.save();
       done(null, user);

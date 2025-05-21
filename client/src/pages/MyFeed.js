@@ -570,9 +570,18 @@ const MyFeed = () => {
                         <div className="flex items-center justify-center w-10 h-10 mr-3 overflow-hidden bg-gray-200 rounded-full">
                           {user.profileImage ? (
                             <img
-                              src={`${API_URL}/assets/profiles/${user.profileImage}`}
+                              src={
+                                user.profileImage.startsWith("http")
+                                  ? user.profileImage
+                                  : `${API_URL}/assets/profiles/${user.profileImage}`
+                              }
                               alt={user.username || "프로필"}
                               className="object-cover w-full h-full"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.style.display = "none";
+                                e.target.nextSibling.style.display = "flex";
+                              }}
                             />
                           ) : (
                             <div className="flex items-center justify-center w-full h-full text-lg font-semibold text-gray-600">
@@ -696,15 +705,30 @@ const MyFeed = () => {
                     <div className="relative w-20 h-20 overflow-hidden bg-gray-200 rounded-full">
                       {profile.profileImage ? (
                         <img
-                          src={`${API_URL}/assets/profiles/${profile.profileImage}`}
+                          src={
+                            profile.profileImage.startsWith("http")
+                              ? profile.profileImage
+                              : `${API_URL}/assets/profiles/${profile.profileImage}`
+                          }
                           alt={profile.username}
                           className="object-cover w-full h-full"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.style.display = "none";
+                            e.target.nextSibling.style.display = "flex";
+                          }}
                         />
                       ) : (
                         <div className="flex items-center justify-center w-full h-full text-3xl font-semibold text-gray-500">
                           {profile.username.charAt(0).toUpperCase()}
                         </div>
                       )}
+                      <div
+                        className="hidden items-center justify-center w-full h-full text-3xl font-semibold text-gray-500"
+                        style={{ display: "none" }}
+                      >
+                        {profile.username.charAt(0).toUpperCase()}
+                      </div>
                     </div>
 
                     {/* 사용자 이름 */}
