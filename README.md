@@ -1,6 +1,6 @@
 # Netless - Express & React SNS 프로젝트
 
-<img src="./images/main-screen.png" width="700" alt="Netless 메인 화면">
+<img src="./images/main-screen.png" width="500" alt="Netless 메인 화면">
 
 ## 🚀 프로젝트 개요
 
@@ -20,7 +20,7 @@ _Socket.io를 활용한 1:1 실시간 채팅 기능_
 
 ### 로그인 & 회원가입
 
-<img src="./images/login.png" width="350" alt="로그인"> <img src="./images/signup.png" width="350" alt="회원가입">
+<img src="./images/login.png" width="500" alt="로그인"> <img src="./images/signup.png" width="500" alt="회원가입">
 _로컬 인증 및 소셜 로그인(Google, Kakao) 지원_
 
 ### 내 피드
