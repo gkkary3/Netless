@@ -23,6 +23,11 @@ _Socket.io를 활용한 1:1 실시간 채팅 기능_
 ![로그인](./images/login.png) ![회원가입](./images/signup.png)
 _로컬 인증 및 소셜 로그인(Google, Kakao) 지원_
 
+### 내 피드
+
+![내 피드](./images/my-feed.png)
+_내가 업로드한 피드 확인 및 친구 관리_
+
 ### 프로필 관리
 
 ![프로필](./images/profile.png)
