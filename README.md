@@ -1,6 +1,6 @@
 # Netless - Express & React SNS 프로젝트
 
-![Netless 메인 화면](./images/main-screen.png)
+<img src="./images/main-screen.png" width="700" alt="Netless 메인 화면">
 
 ## 🚀 프로젝트 개요
 
@@ -10,27 +10,27 @@
 
 ### 메인 피드
 
-![메인 피드](./images/feed.png)
+<img src="./images/feed.png" width="500" alt="메인 피드">
 _사용자들의 게시글과 실시간 업데이트되는 피드 화면_
 
 ### 실시간 메시징
 
-![실시간 메시징](./images/messaging.png)
+<img src="./images/messaging.png" width="500" alt="실시간 메시징">
 _Socket.io를 활용한 1:1 실시간 채팅 기능_
 
 ### 로그인 & 회원가입
 
-![로그인](./images/login.png) ![회원가입](./images/signup.png)
+<img src="./images/login.png" width="350" alt="로그인"> <img src="./images/signup.png" width="350" alt="회원가입">
 _로컬 인증 및 소셜 로그인(Google, Kakao) 지원_
 
 ### 내 피드
 
-![내 피드](./images/my-feed.png)
+<img src="./images/my-feed.png" width="500" alt="내 피드">
 _내가 업로드한 피드 확인 및 친구 관리_
 
 ### 프로필 관리
 
-![프로필](./images/profile.png)
+<img src="./images/profile.png" width="500" alt="프로필 관리">
 _프로필 이미지 업로드 및 개인정보 관리_
 
 ## 🛠 기술 스택
