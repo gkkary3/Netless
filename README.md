@@ -173,4 +173,4 @@ npm run client:dev
 
 **개발 기간**: 약 1개월  
 **팀 구성**: 개인 프로젝트  
-**URL**: [[https://github.com/gkkary3/Netless](https://netless.vercel.app/)]
+**URL**: [[프로젝트 바로가기](https://netless.vercel.app/)]
