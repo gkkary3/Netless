@@ -20,7 +20,8 @@ _Socket.io를 활용한 1:1 실시간 채팅 기능_
 
 ### 로그인 & 회원가입
 
-![로그인](./images/login.png) ![회원가입](./images/signup.png)
+![로그인](![image](https://github.com/user-attachments/assets/2bca1e48-e3d1-4ccd-8926-f906d80c25e4)
+) ![회원가입](./images/signup.png)
 _로컬 인증 및 소셜 로그인(Google, Kakao) 지원_
 
 ### 프로필 관리
