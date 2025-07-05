@@ -82,9 +82,12 @@ const googleStrategyConfig = new GoogleStrategy(
 passport.use("google", googleStrategyConfig);
 
 const kakaoClientID = process.env.KAKAO_CLIENT_ID;
+const kakaoClientSecret = process.env.KAKAO_CLIENT_SECRET; // 추가
+
 const kakaoStrategyConfig = new KakaoStrategy(
   {
     clientID: kakaoClientID,
+    clientSecret: kakaoClientSecret,
     callbackURL: "/auth/kakao/callback",
   },
 
