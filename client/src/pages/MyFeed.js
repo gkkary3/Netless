@@ -220,8 +220,40 @@ const MyFeed = () => {
             !friendRequests.includes(person._id)
         );
 
+        // 각 사용자에 대해 친구 요청 상태 확인
+        const usersWithRequestStatus = await Promise.all(
+          filtered.map(async (person) => {
+            try {
+              const userResponse = await fetch(
+                `${API_URL}/profile/${person._id}`,
+                {
+                  credentials: "include",
+                }
+              );
+
+              if (userResponse.ok) {
+                const userData = await userResponse.json();
+                const hasSentRequest =
+                  userData.user.friendsRequests &&
+                  userData.user.friendsRequests.includes(user._id);
+
+                return {
+                  ...person,
+                  hasSentRequest,
+                };
+              }
+              return person;
+            } catch (err) {
+              console.error(`사용자 ${person._id} 정보 가져오기 실패:`, err);
+              return person;
+            }
+          })
+        );
+
         // 랜덤으로 최대 5명 선택
-        const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+        const shuffled = [...usersWithRequestStatus].sort(
+          () => 0.5 - Math.random()
+        );
 
         setSuggestedPeople(shuffled.slice(0, Math.min(5, shuffled.length)));
       }
@@ -349,9 +381,11 @@ const MyFeed = () => {
         // 친구 정보 새로고침
         await fetchFriendsInfo();
 
-        // 추천 목록에서 제거
+        // 추천 목록에서 해당 사용자의 상태 업데이트
         setSuggestedPeople((prev) =>
-          prev.filter((person) => person._id !== userId)
+          prev.map((person) =>
+            person._id === userId ? { ...person, hasSentRequest: true } : person
+          )
         );
       } else {
         const errorData = await response.json();
@@ -383,6 +417,15 @@ const MyFeed = () => {
       if (response.ok) {
         if (isOwnFeed) {
           fetchFriendsInfo();
+
+          // 추천 목록에서 해당 사용자의 상태 업데이트
+          setSuggestedPeople((prev) =>
+            prev.map((person) =>
+              person._id === userId
+                ? { ...person, hasSentRequest: false }
+                : person
+            )
+          );
         } else {
           // 다른 사용자의 피드인 경우 - 친구 요청 취소 상태 직접 업데이트
           setFriendInfo({
@@ -994,12 +1037,25 @@ const MyFeed = () => {
                               )}
                             </div>
                           </div>
-                          <button
-                            onClick={() => handleSendFriendRequest(person._id)}
-                            className="px-3 py-1 text-xs text-blue-600 border border-blue-500 rounded-full hover:bg-blue-50"
-                          >
-                            친구 추가
-                          </button>
+                          {person.hasSentRequest ? (
+                            <button
+                              onClick={() =>
+                                handleCancelFriendRequest(person._id)
+                              }
+                              className="px-3 py-1 text-xs text-gray-600 border border-gray-400 rounded-full hover:bg-gray-50"
+                            >
+                              요청 취소
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() =>
+                                handleSendFriendRequest(person._id)
+                              }
+                              className="px-3 py-1 text-xs text-blue-600 border border-blue-500 rounded-full hover:bg-blue-50"
+                            >
+                              친구 추가
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>

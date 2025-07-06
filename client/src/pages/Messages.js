@@ -34,7 +34,7 @@ const Messages = () => {
   const [friendsList, setFriendsList] = useState([]);
   const [loadingFriends, setLoadingFriends] = useState(false);
   const { user } = useAuth();
-  const { socket, connected } = useSocket();
+  const { socket, connected, isUserOnline } = useSocket();
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
   // 대화 목록 불러오기
@@ -309,6 +309,10 @@ const Messages = () => {
         {user.isFriend && (
           <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
         )}
+        {/* 온라인 상태 표시 */}
+        {isUserOnline(user._id) && (
+          <span className="absolute bottom-0 right-0 w-3 h-3 bg-blue-500 border-2 border-white rounded-full"></span>
+        )}
       </div>
       <div>
         <p className="font-medium text-gray-800">{user.username}</p>
@@ -447,8 +451,9 @@ const Messages = () => {
                             .toUpperCase()}
                         </span>
                       </div>
-                      {connected && (
-                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></span>
+                      {/* 온라인 상태 표시 */}
+                      {isUserOnline(conversation.otherUser._id) && (
+                        <span className="absolute bottom-0 right-0 w-3 h-3 bg-blue-500 border-2 border-white rounded-full"></span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">

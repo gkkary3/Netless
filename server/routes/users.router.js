@@ -7,9 +7,10 @@ const {
 const passport = require("passport");
 const User = require("../models/users.model");
 const sendMail = require("./mail/mail");
+const emailVerificationStore = {};
 
 usersRouter.post("/login", (req, res, next) => {
-  passport.authenticate("local", (err, user, info) => {
+  passport.authenticate("local", async (err, user, info) => {
     if (err) {
       return res.status(500).json({ error: "서버 에러가 발생했습니다." });
     }
@@ -19,12 +20,23 @@ usersRouter.post("/login", (req, res, next) => {
         .json({ error: info?.msg || "로그인에 실패했습니다." });
     }
 
-    req.login(user, (err) => {
+    req.login(user, async (err) => {
       if (err) {
         return res
           .status(500)
           .json({ error: "로그인 처리 중 에러가 발생했습니다." });
       }
+
+      // 온라인 상태 업데이트
+      try {
+        await User.findByIdAndUpdate(user._id, {
+          isOnline: true,
+          lastSeen: new Date(),
+        });
+      } catch (updateErr) {
+        console.error("온라인 상태 업데이트 실패:", updateErr);
+      }
+
       return res.json({ success: true, user });
     });
   })(req, res, next);
@@ -38,13 +50,28 @@ usersRouter.get("/check", (req, res) => {
   }
 });
 
-usersRouter.post("/logout", (req, res, next) => {
-  req.logOut(function (err) {
+usersRouter.post("/logout", async (req, res, next) => {
+  const userId = req.user?._id;
+
+  req.logOut(async function (err) {
     if (err) {
       return res
         .status(500)
         .json({ error: "로그아웃 중 오류가 발생했습니다." });
     }
+
+    // 온라인 상태 업데이트
+    if (userId) {
+      try {
+        await User.findByIdAndUpdate(userId, {
+          isOnline: false,
+          lastSeen: new Date(),
+        });
+      } catch (updateErr) {
+        console.error("오프라인 상태 업데이트 실패:", updateErr);
+      }
+    }
+
     return res.json({ success: true });
   });
 });
@@ -54,10 +81,24 @@ usersRouter.post("/signup", async (req, res) => {
   const user = new User(req.body);
   try {
     await user.save();
+
+    req.login(user, (err) => {
+      if (err) {
+        return res
+          .status(500)
+          .json({ error: "로그인 처리 중 오류가 발생했습니다." });
+      }
+
+      const userResponse = {
+        id: user._id,
+        email: user.email,
+        username: user.username,
+        profileImage: user.profileImage,
+      };
+      return res.status(201).json({ success: true, user: userResponse });
+    });
     //이메일 보내기
     // sendMail("nambawon1@naver.com", "Park sangmin", "welcome");
-
-    return res.status(201).json({ success: true });
   } catch (err) {
     console.log(err);
     return res.status(500).json({ error: "회원가입 중 오류가 발생했습니다." });
@@ -109,6 +150,54 @@ usersRouter.get("/:id", checkAuthenticated, async (req, res) => {
       .status(500)
       .json({ error: "사용자 정보를 가져오는데 실패했습니다." });
   }
+});
+
+usersRouter.post("/send-verification-code", async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: "이메일이 필요합니다." });
+  }
+
+  console.log(email);
+
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = Date.now() + 5 * 60 * 1000;
+
+  try {
+    await sendMail(email, code, "verification");
+  } catch (err) {
+    return res.status(500).json({ error: "이메일 발송에 실패했습니다." });
+  }
+
+  emailVerificationStore[email] = { code, expiresAt };
+
+  return res.json({ success: true, message: "인증번호가 발송되었습니다." });
+});
+
+usersRouter.post("/verify-code", (req, res) => {
+  const { email, code } = req.body;
+  if (!email || !code) {
+    return res.status(400).json({ error: "이메일과 인증번호가 필요합니다." });
+  }
+
+  const record = emailVerificationStore[email];
+  if (!record) {
+    return res.status(400).json({ error: "인증번호를 먼저 발급받으세요." });
+  }
+
+  if (Date.now() > record.expiresAt) {
+    delete emailVerificationStore[email];
+    return res.status(400).json({ error: "인증번호가 만료되었습니다." });
+  }
+
+  if (record.code !== code) {
+    return res.status(400).json({ error: "인증번호가 일치하지 않습니다." });
+  }
+
+  // 인증 성공: 인증 완료 표시(예: verified: true)
+  record.verified = true;
+
+  return res.json({ success: true, message: "이메일 인증이 완료되었습니다." });
 });
 
 module.exports = usersRouter;

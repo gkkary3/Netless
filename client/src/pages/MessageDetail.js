@@ -40,7 +40,7 @@ const MessageSkeleton = ({ isOwnMessage }) => (
     className={`flex mb-4 ${isOwnMessage ? "justify-end" : "justify-start"}`}
   >
     {!isOwnMessage && (
-      <div className="w-8 h-8 mr-2 bg-gray-200 rounded-full"></div>
+      <div className="mr-2 w-8 h-8 bg-gray-200 rounded-full"></div>
     )}
     <div
       className={`px-4 py-2 rounded-lg ${
@@ -67,6 +67,7 @@ const MessageDetail = () => {
   const { user } = useAuth();
   const { socket, connected } = useSocket();
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+  const inputRef = useRef(null);
 
   // 메시지 스크롤 처리
   const scrollToBottom = () => {
@@ -161,6 +162,7 @@ const MessageDetail = () => {
         setMessages((prevMessages) => [...prevMessages, message]);
         setIsSending(false);
         setNewMessage("");
+        if (inputRef.current) inputRef.current.focus();
       }
     };
 
@@ -193,15 +195,11 @@ const MessageDetail = () => {
   // 메시지 전송 처리
   const handleSendMessage = async (e) => {
     e.preventDefault();
-
     if (!newMessage.trim()) return;
     if (isSending) return;
-
     setIsSending(true);
-
     try {
       if (socket && connected) {
-        // Socket.io로 메시지 전송
         socket.emit("send_message", {
           receiverId: userId,
           content: newMessage,
@@ -211,10 +209,10 @@ const MessageDetail = () => {
               : `${user._id}_${userId}`.split("_").sort().join("_"),
         });
       } else {
-        // 소켓 연결이 없을 경우 REST API 사용
         const sentMessage = await sendMessage(userId, newMessage);
         setMessages((prev) => [...prev, sentMessage]);
         setNewMessage("");
+        if (inputRef.current) inputRef.current.focus();
       }
     } catch (err) {
       toast.error("메시지 전송에 실패했습니다.");
@@ -226,21 +224,28 @@ const MessageDetail = () => {
   // 그룹화된 메시지
   const groupedMessages = groupMessagesByDate(messages);
 
+  // 메시지 전송 후 input에 포커스
+  useEffect(() => {
+    if (!isSending && newMessage === "" && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isSending, newMessage]);
+
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
 
-      <div className="container max-w-2xl px-4 mx-auto py-6">
+      <div className="container px-4 py-6 mx-auto max-w-2xl">
         <div className="bg-white rounded-lg shadow overflow-hidden flex flex-col h-[calc(100vh-180px)]">
           {/* 헤더 */}
-          <div className="p-4 border-b flex items-center space-x-3 bg-white">
+          <div className="flex items-center p-4 space-x-3 bg-white border-b">
             <button
               onClick={() => navigate("/messages")}
               className="text-gray-600 hover:text-gray-900"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
+                className="w-6 h-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -257,7 +262,7 @@ const MessageDetail = () => {
             {otherUser ? (
               <Link
                 to={`/feed/${otherUser._id}`}
-                className="flex items-center space-x-3 flex-1"
+                className="flex flex-1 items-center space-x-3"
               >
                 {otherUser.profileImage ? (
                   <img
@@ -276,7 +281,7 @@ const MessageDetail = () => {
                     otherUser.profileImage ? "hidden" : "flex"
                   }`}
                 >
-                  <span className="text-md font-semibold text-gray-600">
+                  <span className="font-semibold text-gray-600 text-md">
                     {otherUser.username.charAt(0).toUpperCase()}
                   </span>
                 </div>
@@ -284,26 +289,28 @@ const MessageDetail = () => {
                   <p className="font-medium text-gray-800">
                     {otherUser.username}
                   </p>
-                  {connected && (
+                  {otherUser.isOnline ? (
                     <p className="text-xs text-green-600">온라인</p>
+                  ) : (
+                    <p className="text-xs text-gray-400">오프라인</p>
                   )}
                 </div>
               </Link>
             ) : (
-              <div className="animate-pulse flex space-x-3 flex-1">
-                <div className="rounded-full bg-gray-200 h-10 w-10"></div>
-                <div className="flex-1 space-y-2 py-1">
-                  <div className="h-4 bg-gray-200 rounded w-24"></div>
-                  <div className="h-3 bg-gray-200 rounded w-16"></div>
+              <div className="flex flex-1 space-x-3 animate-pulse">
+                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                <div className="flex-1 py-1 space-y-2">
+                  <div className="w-24 h-4 bg-gray-200 rounded"></div>
+                  <div className="w-16 h-3 bg-gray-200 rounded"></div>
                 </div>
               </div>
             )}
           </div>
 
           {/* 메시지 영역 */}
-          <div className="flex-1 p-4 overflow-y-auto" ref={messageContainerRef}>
+          <div className="overflow-y-auto flex-1 p-4" ref={messageContainerRef}>
             {error && (
-              <div className="p-3 mb-4 bg-red-100 text-red-700 rounded-md">
+              <div className="p-3 mb-4 text-red-700 bg-red-100 rounded-md">
                 {error}
               </div>
             )}
@@ -322,7 +329,7 @@ const MessageDetail = () => {
                 {groupedMessages.map((group, groupIndex) => (
                   <div key={groupIndex} className="mb-6">
                     <div className="flex justify-center mb-4">
-                      <span className="px-3 py-1 text-xs bg-gray-200 rounded-full text-gray-600">
+                      <span className="px-3 py-1 text-xs text-gray-600 bg-gray-200 rounded-full">
                         {group.date}
                       </span>
                     </div>
@@ -343,7 +350,7 @@ const MessageDetail = () => {
                                 <img
                                   src={`${API_URL}/assets/profiles/${message.sender.profileImage}`}
                                   alt={message.sender.username}
-                                  className="w-8 h-8 rounded-full mr-2"
+                                  className="mr-2 w-8 h-8 rounded-full"
                                   onError={(e) => {
                                     e.target.onerror = null;
                                     e.target.style.display = "none";
@@ -372,8 +379,8 @@ const MessageDetail = () => {
                             <div
                               className={`px-4 py-2 rounded-lg ${
                                 isOwnMessage
-                                  ? "bg-blue-500 text-white rounded-br-none"
-                                  : "bg-gray-200 text-gray-800 rounded-bl-none"
+                                  ? "text-white bg-blue-500 rounded-br-none"
+                                  : "text-gray-800 bg-gray-200 rounded-bl-none"
                               }`}
                             >
                               {message.content}
@@ -400,7 +407,7 @@ const MessageDetail = () => {
               </div>
             ) : (
               // 메시지 없음 표시
-              <div className="flex flex-col items-center justify-center h-full text-gray-500">
+              <div className="flex flex-col justify-center items-center h-full text-gray-500">
                 <p>아직 대화가 없습니다.</p>
                 <p className="mt-2 text-sm">첫 메시지를 보내보세요!</p>
               </div>
@@ -408,14 +415,15 @@ const MessageDetail = () => {
           </div>
 
           {/* 메시지 입력 영역 */}
-          <form onSubmit={handleSendMessage} className="p-4 border-t bg-white">
+          <form onSubmit={handleSendMessage} className="p-4 bg-white border-t">
             <div className="flex space-x-2">
               <input
+                ref={inputRef}
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="메시지를 입력하세요..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isSending}
               />
               <button
@@ -428,11 +436,11 @@ const MessageDetail = () => {
                 }`}
               >
                 {isSending ? (
-                  <div className="w-5 h-5 border-2 border-white rounded-full animate-spin border-t-transparent"></div>
+                  <div className="w-5 h-5 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
                 ) : (
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
+                    className="w-5 h-5"
                     viewBox="0 0 20 20"
                     fill="currentColor"
                   >

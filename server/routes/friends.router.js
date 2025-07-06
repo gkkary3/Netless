@@ -78,8 +78,50 @@ router.put("/:id/add-friend", checkAuthenticated, async (req, res) => {
       }
     }
 
+    // 이미 친구 요청을 보냈는지 확인
+    if (
+      user.friendsRequests &&
+      user.friendsRequests.includes(req.user._id.toString())
+    ) {
+      if (req.xhr || req.headers.accept.includes("application/json")) {
+        return res.status(400).json({
+          success: false,
+          message: "이미 친구 요청을 보냈습니다.",
+        });
+      } else {
+        req.flash("error", "이미 친구 요청을 보냈습니다.");
+        return res.redirect("/friends");
+      }
+    }
+
+    // 이미 친구인지 확인
+    if (user.friends && user.friends.includes(req.user._id.toString())) {
+      if (req.xhr || req.headers.accept.includes("application/json")) {
+        return res.status(400).json({
+          success: false,
+          message: "이미 친구입니다.",
+        });
+      } else {
+        req.flash("error", "이미 친구입니다.");
+        return res.redirect("/friends");
+      }
+    }
+
+    // 자기 자신에게 친구 요청을 보내는지 확인
+    if (req.user._id.toString() === req.params.id) {
+      if (req.xhr || req.headers.accept.includes("application/json")) {
+        return res.status(400).json({
+          success: false,
+          message: "자기 자신에게는 친구 요청을 보낼 수 없습니다.",
+        });
+      } else {
+        req.flash("error", "자기 자신에게는 친구 요청을 보낼 수 없습니다.");
+        return res.redirect("/friends");
+      }
+    }
+
     await User.findByIdAndUpdate(user._id, {
-      friendsRequests: user.friendsRequests.concat([req.user._id]),
+      friendsRequests: (user.friendsRequests || []).concat([req.user._id]),
     });
 
     if (req.xhr || req.headers.accept.includes("application/json")) {

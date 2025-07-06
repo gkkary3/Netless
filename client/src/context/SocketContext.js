@@ -10,6 +10,7 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const [connected, setConnected] = useState(false);
   const [reconnecting, setReconnecting] = useState(false);
+  const [onlineUsers, setOnlineUsers] = useState(new Set());
   const { user } = useAuth();
 
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
@@ -51,6 +52,24 @@ export const SocketProvider = ({ children }) => {
         console.error("연결 오류:", error.message);
       });
 
+      // 온라인 상태 이벤트 리스너
+      socketInstance.on("user_online", ({ userId }) => {
+        setOnlineUsers((prev) => new Set([...prev, userId]));
+      });
+
+      socketInstance.on("user_offline", ({ userId }) => {
+        setOnlineUsers((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(userId);
+          return newSet;
+        });
+      });
+
+      // 초기 온라인 사용자 목록 수신
+      socketInstance.on("online_users_list", ({ onlineUsers }) => {
+        setOnlineUsers(new Set(onlineUsers));
+      });
+
       setSocket(socketInstance);
 
       // 정리 함수
@@ -72,6 +91,8 @@ export const SocketProvider = ({ children }) => {
     socket,
     connected,
     reconnecting,
+    onlineUsers,
+    isUserOnline: (userId) => onlineUsers.has(userId),
   };
 
   return (

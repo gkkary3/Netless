@@ -43,6 +43,15 @@ const userSchema = mongoose.Schema(
     },
     friends: { type: [String], default: [] },
     friendsRequests: { type: [String], default: [] },
+    // 온라인 상태 관리
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
+    lastSeen: {
+      type: Date,
+      default: Date.now,
+    },
     // 대화 관련 필드 추가
     conversations: [
       {

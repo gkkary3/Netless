@@ -55,7 +55,14 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.error || "회원가입에 실패했습니다.");
       }
 
-      return { success: true };
+      const data = await response.json();
+
+      // 회원가입 성공 시 사용자 정보 설정
+      if (data.user) {
+        setUser(data.user);
+      }
+
+      return { success: true, user: data.user };
     } catch (err) {
       setError(err.message);
       return { success: false, error: err.message };

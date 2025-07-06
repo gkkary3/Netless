@@ -170,17 +170,48 @@ io.use((socket, next) => {
 const userSockets = new Map();
 
 // Socket.io 연결 처리
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   const userId = socket.request.user._id.toString();
   console.log(`사용자 ${userId} 연결됨`);
 
   // 사용자 ID를 소켓 ID에 매핑
   userSockets.set(userId, socket.id);
 
+  // 온라인 상태 업데이트
+  try {
+    await User.findByIdAndUpdate(userId, {
+      isOnline: true,
+      lastSeen: new Date(),
+    });
+
+    // 현재 온라인인 사용자 목록을 새로 연결된 사용자에게 전송
+    const onlineUsers = await User.find({ isOnline: true }).select("_id");
+    const onlineUserIds = onlineUsers.map((user) => user._id.toString());
+    socket.emit("online_users_list", { onlineUsers: onlineUserIds });
+
+    // 다른 사용자들에게 온라인 상태 알림
+    socket.broadcast.emit("user_online", { userId });
+  } catch (err) {
+    console.error("온라인 상태 업데이트 실패:", err);
+  }
+
   // 연결 해제 처리
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     console.log(`사용자 ${userId} 연결 해제됨`);
     userSockets.delete(userId);
+
+    // 오프라인 상태 업데이트
+    try {
+      await User.findByIdAndUpdate(userId, {
+        isOnline: false,
+        lastSeen: new Date(),
+      });
+
+      // 다른 사용자들에게 오프라인 상태 알림
+      socket.broadcast.emit("user_offline", { userId });
+    } catch (err) {
+      console.error("오프라인 상태 업데이트 실패:", err);
+    }
   });
 
   // 새 메시지 수신 및 전달
@@ -282,6 +313,15 @@ io.on("connection", (socket) => {
     }
   });
 });
+
+// 서버에서 주기적으로 비활성 사용자 체크
+setInterval(async () => {
+  const inactiveThreshold = new Date(Date.now() - 5 * 60 * 1000); // 5분
+  await User.updateMany(
+    { lastSeen: { $lt: inactiveThreshold }, isOnline: true },
+    { isOnline: false }
+  );
+}, 60000); // 1분마다 체크
 
 // app.listen 대신 server.listen 사용
 server.listen(port, () => {
