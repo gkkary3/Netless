@@ -201,6 +201,11 @@ const UserProfileModal = ({ user, isOpen, onClose, onViewFeed }) => {
   // 프로필 이미지 URL 생성
   const getProfileImageUrl = () => {
     if (user?.profileImage) {
+      // S3 URL인지 확인
+      if (user.profileImage.startsWith("http")) {
+        return user.profileImage;
+      }
+      // 로컬 파일인 경우
       return `${API_URL}/assets/profiles/${user.profileImage}`;
     }
     return null;

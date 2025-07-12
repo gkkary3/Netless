@@ -142,6 +142,11 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
   // 프로필 이미지 URL 생성
   const getProfileImageUrl = () => {
     if (comment.author?.profileImage) {
+      // S3 URL인지 확인
+      if (comment.author.profileImage.startsWith("http")) {
+        return comment.author.profileImage;
+      }
+      // 로컬 파일인 경우
       return `${API_URL}/assets/profiles/${comment.author.profileImage}`;
     }
     return null;

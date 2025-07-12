@@ -218,8 +218,19 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
   // 현재 이미지의 URL
   const getCurrentImageUrl = () => {
     if (post.images && post.images.length > 0) {
-      return `${API_URL}/assets/images/${post.images[currentImageIndex]}`;
+      const imageUrl = post.images[currentImageIndex];
+      // S3 URL인지 확인
+      if (imageUrl.startsWith("http")) {
+        return imageUrl;
+      }
+      // 로컬 파일인 경우
+      return `${API_URL}/assets/images/${imageUrl}`;
     } else if (post.image) {
+      // S3 URL인지 확인
+      if (post.image.startsWith("http")) {
+        return post.image;
+      }
+      // 로컬 파일인 경우
       return `${API_URL}/assets/images/${post.image}`;
     }
     return "";
@@ -449,6 +460,11 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
   // 프로필 이미지 URL 생성
   const getProfileImageUrl = (imageFilename) => {
     if (imageFilename) {
+      // S3 URL인지 확인
+      if (imageFilename.startsWith("http")) {
+        return imageFilename;
+      }
+      // 로컬 파일인 경우
       return `${API_URL}/assets/profiles/${imageFilename}`;
     }
     return null;
@@ -457,6 +473,11 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
   // 현재 사용자 프로필 이미지 URL
   const getCurrentUserProfileImageUrl = () => {
     if (user?.profileImage) {
+      // S3 URL인지 확인
+      if (user.profileImage.startsWith("http")) {
+        return user.profileImage;
+      }
+      // 로컬 파일인 경우
       return `${API_URL}/assets/profiles/${user.profileImage}`;
     }
     return null;
@@ -619,7 +640,11 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
                     style={{ minWidth: "100%" }}
                   >
                     <img
-                      src={`${API_URL}/assets/images/${image}`}
+                      src={
+                        image.startsWith("http")
+                          ? image
+                          : `${API_URL}/assets/images/${image}`
+                      }
                       alt={`게시물 이미지 ${idx + 1}`}
                       className="object-cover w-full h-full"
                     />
@@ -714,7 +739,11 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
               onClick={openImageModal}
             >
               <img
-                src={`${API_URL}/assets/images/${post.image}`}
+                src={
+                  post.image.startsWith("http")
+                    ? post.image
+                    : `${API_URL}/assets/images/${post.image}`
+                }
                 alt="게시물 이미지"
                 className="object-cover w-full h-full"
               />
@@ -1031,7 +1060,11 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
                         {imagesToRemove.includes(image) ? (
                           <div className="relative w-full h-full">
                             <img
-                              src={`${API_URL}/assets/images/${image}`}
+                              src={
+                                image.startsWith("http")
+                                  ? image
+                                  : `${API_URL}/assets/images/${image}`
+                              }
                               alt={`이미지 ${index}`}
                               className="object-cover w-full h-full"
                             />
@@ -1059,28 +1092,39 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
                             </button>
                           </div>
                         ) : (
-                          <button
-                            className="absolute text-blue-500 right-1 top-1 hover:text-blue-700"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveOriginalImage(image);
-                            }}
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="w-4 h-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
+                          <div className="relative w-full h-full">
+                            <img
+                              src={
+                                image.startsWith("http")
+                                  ? image
+                                  : `${API_URL}/assets/images/${image}`
+                              }
+                              alt={`이미지 ${index}`}
+                              className="object-cover w-full h-full"
+                            />
+                            <button
+                              className="absolute text-blue-500 right-1 top-1 hover:text-blue-700"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveOriginalImage(image);
+                              }}
                             >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
-                            </svg>
-                          </button>
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="w-4 h-4"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M6 18L18 6M6 6l12 12"
+                                />
+                              </svg>
+                            </button>
+                          </div>
                         )}
                       </div>
                     ))}

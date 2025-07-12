@@ -3,63 +3,17 @@ const { checkAuthenticated, checkIsMe } = require("../middlewares/auth");
 const Post = require("../models/posts.model");
 const User = require("../models/users.model");
 const router = express.Router({ mergeParams: true });
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
-
-// 프로필 이미지 저장 경로 확인 및 생성
-const uploadDir = path.join(__dirname, "../public/assets/profiles");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// multer 스토리지 엔진 설정
-const storageEngine = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDir);
-  },
-  filename(req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const extension = path.extname(file.originalname);
-    const newFilename = "profile-" + uniqueSuffix + extension;
-    cb(null, newFilename);
-  },
-});
-
-// 파일 필터 추가
-const fileFilter = (req, file, cb) => {
-  // 허용할 이미지 형식 체크
-  const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error("지원하지 않는 파일 형식입니다: " + file.mimetype), false);
-  }
-};
-
-// multer 설정
-const upload = multer({
-  storage: storageEngine,
-  fileFilter: fileFilter,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
-  },
-}).single("profileImage");
+const { profileUpload, deleteFromS3 } = require("../config/s3");
 
 // 업로드 미들웨어 에러 처리를 위한 래퍼 함수
 const uploadMiddleware = (req, res, next) => {
+  const upload = profileUpload.single("profileImage");
   upload(req, res, function (err) {
-    if (err instanceof multer.MulterError) {
-      console.error("Multer 에러:", err);
+    if (err) {
+      console.error("프로필 이미지 업로드 에러:", err);
       return res.status(400).json({
         success: false,
         message: "파일 업로드 오류: " + err.message,
-      });
-    } else if (err) {
-      console.error("알 수 없는 에러:", err);
-      return res.status(500).json({
-        success: false,
-        message: "파일 처리 중 오류 발생: " + err.message,
       });
     }
     next();
@@ -174,19 +128,23 @@ router.put("/image", checkIsMe, uploadMiddleware, async (req, res) => {
       });
     }
 
-    // 기존 프로필 이미지가 있다면 삭제
+    // 기존 프로필 이미지가 있다면 S3에서 삭제
     const user = await User.findById(req.params.id);
     if (user.profileImage) {
-      const oldImagePath = path.join(uploadDir, user.profileImage);
-      if (fs.existsSync(oldImagePath)) {
-        fs.unlinkSync(oldImagePath);
+      // S3 URL에서 키 추출
+      const imageKey = user.profileImage.includes("amazonaws.com")
+        ? user.profileImage.split("/").slice(-2).join("/") // profiles/filename 형태로 추출
+        : user.profileImage; // 이미 키 형태인 경우
+
+      if (imageKey.startsWith("profiles/")) {
+        await deleteFromS3(imageKey);
       }
     }
 
-    // 프로필 이미지 업데이트
+    // 프로필 이미지 업데이트 (S3 URL 저장)
     const updatedUser = await User.findByIdAndUpdate(
       req.params.id,
-      { profileImage: req.file.filename },
+      { profileImage: req.file.location }, // S3 URL 저장
       { new: true }
     ).select("-password");
 
