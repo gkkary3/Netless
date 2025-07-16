@@ -46,7 +46,6 @@ const Messages = () => {
       setError(null);
     } catch (err) {
       setError("대화 목록을 불러오는데 실패했습니다.");
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -63,7 +62,6 @@ const Messages = () => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("친구 목록 데이터:", data);
 
         if (data.success && data.friends && data.friends.length > 0) {
           // 친구 ID 목록을 받아옴
@@ -76,7 +74,6 @@ const Messages = () => {
 
           if (allUsersResponse.ok) {
             const allUsersData = await allUsersResponse.json();
-            console.log("모든 사용자 데이터:", allUsersData);
 
             if (allUsersData.success && allUsersData.users) {
               // 친구 ID에 해당하는 사용자만 필터링
@@ -104,7 +101,6 @@ const Messages = () => {
         }
       }
     } catch (err) {
-      console.error("친구 목록 불러오기 오류:", err);
       setFriendsList([]);
     } finally {
       setLoadingFriends(false);
@@ -213,12 +209,10 @@ const Messages = () => {
               friend.email.toLowerCase().includes(query.toLowerCase()))
         );
 
-        console.log("친구 목록에서 검색 결과:", filteredFriends);
         setSearchResults(filteredFriends);
       } else {
         // 친구 목록이 없는 경우에는 서버에서 친구만 검색해오도록 조정
         const results = await searchUsers(query + "?onlyFriends=true");
-        console.log("서버 검색 결과:", results);
 
         const processedResults = results.map((user) => {
           const hasProfileImage =
@@ -237,7 +231,6 @@ const Messages = () => {
       }
     } catch (err) {
       toast.error("사용자 검색에 실패했습니다.");
-      console.error(err);
     } finally {
       setIsSearching(false);
     }
@@ -270,7 +263,6 @@ const Messages = () => {
         toast.success("대화가 삭제되었습니다.");
       } catch (err) {
         toast.error("대화 삭제에 실패했습니다.");
-        console.error(err);
       } finally {
         setDeletingConversationId(null);
       }

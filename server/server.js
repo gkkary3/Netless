@@ -86,12 +86,8 @@ app.set("view engine", "ejs");
 // mongoose.set('strictQuery', false);
 mongoose
   .connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log("mongoDB connected");
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+  .then(() => {})
+  .catch((err) => {});
 
 app.use(express.static(path.join(__dirname, "public")));
 
@@ -172,7 +168,6 @@ const userSockets = new Map();
 // Socket.io 연결 처리
 io.on("connection", async (socket) => {
   const userId = socket.request.user._id.toString();
-  console.log(`사용자 ${userId} 연결됨`);
 
   // 사용자 ID를 소켓 ID에 매핑
   userSockets.set(userId, socket.id);
@@ -191,13 +186,10 @@ io.on("connection", async (socket) => {
 
     // 다른 사용자들에게 온라인 상태 알림
     socket.broadcast.emit("user_online", { userId });
-  } catch (err) {
-    console.error("온라인 상태 업데이트 실패:", err);
-  }
+  } catch (err) {}
 
   // 연결 해제 처리
   socket.on("disconnect", async () => {
-    console.log(`사용자 ${userId} 연결 해제됨`);
     userSockets.delete(userId);
 
     // 오프라인 상태 업데이트
@@ -209,9 +201,7 @@ io.on("connection", async (socket) => {
 
       // 다른 사용자들에게 오프라인 상태 알림
       socket.broadcast.emit("user_offline", { userId });
-    } catch (err) {
-      console.error("오프라인 상태 업데이트 실패:", err);
-    }
+    } catch (err) {}
   });
 
   // 새 메시지 수신 및 전달
@@ -245,12 +235,7 @@ io.on("connection", async (socket) => {
       if (receiverSocketId) {
         io.to(receiverSocketId).emit("receive_message", populatedMessage);
       }
-    } catch (error) {
-      console.error("메시지 전송 오류:", error);
-      socket.emit("message_error", {
-        error: "메시지 전송 중 오류가 발생했습니다",
-      });
-    }
+    } catch (error) {}
   });
 
   // 메시지 읽음 표시 처리
@@ -276,9 +261,7 @@ io.on("connection", async (socket) => {
       if (senderSocketId) {
         io.to(senderSocketId).emit("message_read", { messageId });
       }
-    } catch (error) {
-      console.error("메시지 읽음 표시 오류:", error);
-    }
+    } catch (error) {}
   });
 
   // 대화 읽음 표시 처리
@@ -308,9 +291,7 @@ io.on("connection", async (socket) => {
           readBy: receiverId,
         });
       }
-    } catch (error) {
-      console.error("대화 읽음 표시 오류:", error);
-    }
+    } catch (error) {}
   });
 });
 
@@ -324,6 +305,4 @@ setInterval(async () => {
 }, 60000); // 1분마다 체크
 
 // app.listen 대신 server.listen 사용
-server.listen(port, () => {
-  console.log(`Listening on ${port}`);
-});
+server.listen(port, () => {});

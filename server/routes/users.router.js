@@ -10,9 +10,9 @@ const sendMail = require("./mail/mail");
 const emailVerificationStore = {};
 
 usersRouter.post("/login", (req, res, next) => {
-  passport.authenticate("local", async (err, user, info) => {
+  passport.authenticate("local", (err, user, info) => {
     if (err) {
-      return res.status(500).json({ error: "서버 에러가 발생했습니다." });
+      return res.status(500).json({ message: "Internal server error" });
     }
     if (!user) {
       return res
@@ -100,7 +100,6 @@ usersRouter.post("/signup", async (req, res) => {
     //이메일 보내기
     // sendMail("nambawon1@naver.com", "Park sangmin", "welcome");
   } catch (err) {
-    console.log(err);
     return res.status(500).json({ error: "회원가입 중 오류가 발생했습니다." });
   }
 });
@@ -157,8 +156,6 @@ usersRouter.post("/send-verification-code", async (req, res) => {
   if (!email) {
     return res.status(400).json({ error: "이메일이 필요합니다." });
   }
-
-  console.log(email);
 
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = Date.now() + 5 * 60 * 1000;

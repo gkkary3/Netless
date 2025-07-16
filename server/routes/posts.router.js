@@ -52,12 +52,8 @@ router.post(
         post: post,
       });
     } catch (err) {
-      console.error("게시물 저장 오류:", err);
-      res.status(500).json({
-        success: false,
-        message: "서버 오류: " + (err.message || "알 수 없는 오류"),
-        error: err.toString(),
-      });
+      // 오류 로그 제거
+      return res.status(500).json({ message: "Internal server error" });
     }
   }
 );
@@ -89,7 +85,6 @@ router.get("/", checkAuthenticated, async (req, res) => {
 
     res.json(updatedPosts);
   } catch (err) {
-    console.log(err);
     return res.status(500).send("Internal Server Error");
   }
 });

@@ -338,7 +338,9 @@ const MyFeed = () => {
 
   // 친구 정보 가져오기
   const fetchUserDetails = async (userIds) => {
-    if (!userIds.length) return [];
+    if (!userIds.length) {
+      return [];
+    }
 
     try {
       const users = await Promise.all(
@@ -350,12 +352,14 @@ const MyFeed = () => {
           if (response.ok) {
             const data = await response.json();
             return data.user;
+          } else {
+            return null;
           }
-          return null;
         })
       );
 
-      return users.filter(Boolean);
+      const filteredUsers = users.filter(Boolean);
+      return filteredUsers;
     } catch (err) {
       console.error("사용자 정보 가져오기 에러:", err);
       return [];
@@ -378,15 +382,25 @@ const MyFeed = () => {
         // 성공 메시지 표시
         toast.success("친구 요청을 보냈습니다.");
 
-        // 친구 정보 새로고침
-        await fetchFriendsInfo();
+        if (isOwnFeed) {
+          // 자신의 피드일 경우 친구 정보 새로고침
+          await fetchFriendsInfo();
 
-        // 추천 목록에서 해당 사용자의 상태 업데이트
-        setSuggestedPeople((prev) =>
-          prev.map((person) =>
-            person._id === userId ? { ...person, hasSentRequest: true } : person
-          )
-        );
+          // 추천 목록에서 해당 사용자의 상태 업데이트
+          setSuggestedPeople((prev) =>
+            prev.map((person) =>
+              person._id === userId
+                ? { ...person, hasSentRequest: true }
+                : person
+            )
+          );
+        } else {
+          // 다른 사용자의 피드인 경우 친구 상태 직접 업데이트
+          setFriendInfo({
+            ...friendInfo,
+            hasSentRequest: true,
+          });
+        }
       } else {
         const errorData = await response.json();
         toast.error(errorData.message || "친구 요청 중 오류가 발생했습니다.");
@@ -436,6 +450,8 @@ const MyFeed = () => {
 
         // 성공 메시지 표시
         toast.success("친구 요청을 취소했습니다.");
+      } else {
+        toast.error("친구 요청 취소에 실패했습니다.");
       }
     } catch (err) {
       console.error("친구 요청 취소 에러:", err);
@@ -459,8 +475,18 @@ const MyFeed = () => {
       );
 
       if (response.ok) {
-        fetchFriendsInfo();
+        if (isOwnFeed) {
+          fetchFriendsInfo();
+        } else {
+          // 다른 사용자의 피드인 경우 - 친구 상태 직접 업데이트
+          setFriendInfo({
+            ...friendInfo,
+            hasReceivedRequest: false,
+          });
+        }
         toast.success("친구 요청을 거절했습니다.");
+      } else {
+        toast.error("친구 요청 거절에 실패했습니다.");
       }
     } catch (err) {
       console.error("친구 요청 거절 에러:", err);
@@ -494,8 +520,15 @@ const MyFeed = () => {
             hasReceivedRequest: false,
             hasSentRequest: false,
           });
+          // 프로필 사용자의 친구 수도 업데이트
+          setProfileUser((prev) => ({
+            ...prev,
+            friendsCount: (prev?.friendsCount || 0) + 1,
+          }));
         }
         toast.success("친구 요청을 수락했습니다.");
+      } else {
+        toast.error("친구 요청 수락에 실패했습니다.");
       }
     } catch (err) {
       console.error("친구 요청 수락 에러:", err);
@@ -528,6 +561,14 @@ const MyFeed = () => {
           hasSentRequest: false,
           hasReceivedRequest: false,
         });
+        // 프로필 사용자의 친구 수도 업데이트
+        setProfileUser((prev) => ({
+          ...prev,
+          friendsCount: Math.max((prev?.friendsCount || 1) - 1, 0),
+        }));
+        toast.success("친구를 삭제했습니다.");
+      } else {
+        toast.error("친구 삭제에 실패했습니다.");
       }
     } catch (err) {
       console.error("친구 삭제 에러:", err);
@@ -546,7 +587,26 @@ const MyFeed = () => {
 
         if (modalType === "friends") {
           // 자신의 피드인지 다른 사용자의 피드인지에 따라 데이터 소스 변경
-          userIds = isOwnFeed ? friendInfo.friends : profileUser?.friends || [];
+          if (isOwnFeed) {
+            userIds = friendInfo.friends;
+          } else {
+            // 다른 사용자의 실제 친구 목록을 API로 가져오기
+            try {
+              const friendsResponse = await fetch(
+                `${API_URL}/friends/list/${targetUserId}`,
+                {
+                  credentials: "include",
+                }
+              );
+              if (friendsResponse.ok) {
+                const friendsData = await friendsResponse.json();
+                userIds = friendsData.friends || [];
+              }
+            } catch (err) {
+              console.error("친구 목록 가져오기 오류:", err);
+              userIds = [];
+            }
+          }
         } else if (modalType === "requests") {
           userIds = friendInfo.friendRequests;
         }

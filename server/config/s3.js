@@ -90,15 +90,16 @@ const postUpload = multer({
 // S3에서 파일 삭제
 const deleteFromS3 = async (fileKey) => {
   try {
-    const deleteCommand = new DeleteObjectCommand({
-      Bucket: bucketName,
+    const params = {
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: fileKey,
-    });
+    };
 
-    await s3Client.send(deleteCommand);
-    console.log(`S3에서 파일 삭제 성공: ${fileKey}`);
+    await s3Client.deleteObject(params).promise();
+    // 삭제 성공 로그 제거
   } catch (error) {
-    console.error(`S3에서 파일 삭제 실패: ${fileKey}`, error);
+    console.error("S3 파일 삭제 실패:", error);
+    throw error;
   }
 };
 

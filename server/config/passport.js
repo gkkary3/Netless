@@ -73,8 +73,7 @@ const googleStrategyConfig = new GoogleStrategy(
       await user.save();
       done(null, user);
     } catch (err) {
-      console.log(err);
-      done(err);
+      return done(err);
     }
   }
 );
@@ -119,8 +118,7 @@ const kakaoStrategyConfig = new KakaoStrategy(
       await user.save();
       done(null, user);
     } catch (err) {
-      console.log(err);
-      done(err);
+      return done(err);
     }
   }
 );

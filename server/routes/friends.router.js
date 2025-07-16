@@ -15,11 +15,57 @@ router.get("/user-friends", checkAuthenticated, async (req, res) => {
       });
     }
 
-    // 사용자의 친구 목록과 친구 요청 목록을 보냄
+    // 중복 제거 및 유효한 친구만 필터링
+    const uniqueFriends = [...new Set(currentUser.friends || [])];
+    const uniqueFriendRequests = [
+      ...new Set(currentUser.friendsRequests || []),
+    ];
+
+    // 존재하는 친구만 필터링
+    const validFriends = [];
+    for (const friendId of uniqueFriends) {
+      try {
+        const friendUser = await User.findById(friendId);
+        if (friendUser) {
+          validFriends.push(friendId);
+        }
+      } catch (err) {
+        // 오류 발생 시 해당 친구 제외
+      }
+    }
+
+    // 존재하는 친구 요청만 필터링
+    const validFriendRequests = [];
+    for (const requestId of uniqueFriendRequests) {
+      try {
+        const requestUser = await User.findById(requestId);
+        if (requestUser) {
+          validFriendRequests.push(requestId);
+        }
+      } catch (err) {
+        // 오류 발생 시 해당 요청 제외
+      }
+    }
+
+    // 만약 유효한 목록이 원래와 다르다면 DB 업데이트
+    if (
+      validFriends.length !== currentUser.friends?.length ||
+      !validFriends.every((id) => currentUser.friends.includes(id)) ||
+      validFriendRequests.length !== currentUser.friendsRequests?.length ||
+      !validFriendRequests.every((id) =>
+        currentUser.friendsRequests.includes(id)
+      )
+    ) {
+      await User.findByIdAndUpdate(req.user._id, {
+        friends: validFriends,
+        friendsRequests: validFriendRequests,
+      });
+    }
+
     return res.status(200).json({
       success: true,
-      friends: currentUser.friends || [],
-      friendRequests: currentUser.friendsRequests || [],
+      friends: validFriends,
+      friendRequests: validFriendRequests,
     });
   } catch (err) {
     console.error("친구 정보 조회 오류:", err);
@@ -120,8 +166,14 @@ router.put("/:id/add-friend", checkAuthenticated, async (req, res) => {
       }
     }
 
+    // 중복 방지하여 친구 요청 추가
+    const existingRequests = user.friendsRequests || [];
+    const updatedRequests = existingRequests.includes(req.user._id.toString())
+      ? existingRequests
+      : [...new Set([...existingRequests, req.user._id.toString()])];
+
     await User.findByIdAndUpdate(user._id, {
-      friendsRequests: (user.friendsRequests || []).concat([req.user._id]),
+      friendsRequests: updatedRequests,
     });
 
     if (req.xhr || req.headers.accept.includes("application/json")) {
@@ -134,7 +186,6 @@ router.put("/:id/add-friend", checkAuthenticated, async (req, res) => {
       res.redirect("/friends");
     }
   } catch (err) {
-    console.log(err);
     if (req.xhr || req.headers.accept.includes("application/json")) {
       return res.status(500).json({
         success: false,
@@ -167,8 +218,9 @@ router.put(
         }
       }
 
-      // friendsRequests가 undefined일 경우를 대비해 빈 배열로 처리
-      const filteredFriendRequests = user.friendsRequests.filter(
+      // friendsRequests가 undefined일 경우를 대비해 빈 배열로 처리하고 중복 제거
+      const uniqueRequests = [...new Set(user.friendsRequests || [])];
+      const filteredFriendRequests = uniqueRequests.filter(
         (friendId) => friendId !== req.params.secondId
       );
 
@@ -219,16 +271,30 @@ router.put(
         }
       }
 
-      // 1. 친구 요청을 보낸 유저의 friends에 현재 유저 추가
+      // 1. 친구 요청을 보낸 유저의 friends에 현재 유저 추가 (중복 방지)
+      const senderFriends = senderUser.friends || [];
+      const updatedSenderFriends = senderFriends.includes(
+        req.user._id.toString()
+      )
+        ? senderFriends
+        : [...new Set([...senderFriends, req.user._id.toString()])];
+
       await User.findByIdAndUpdate(senderUser._id, {
-        friends: (senderUser.friends || []).concat([req.user._id]),
+        friends: updatedSenderFriends,
       });
 
       // 2. 현재 유저의 friends에 친구 요청 보낸 유저 추가, friendsRequests에서 해당 요청 제거
       const currentUser = await User.findById(req.user._id);
 
+      const currentFriends = currentUser.friends || [];
+      const updatedCurrentFriends = currentFriends.includes(
+        senderUser._id.toString()
+      )
+        ? currentFriends
+        : [...new Set([...currentFriends, senderUser._id.toString()])];
+
       await User.findByIdAndUpdate(req.user._id, {
-        friends: (currentUser.friends || []).concat([senderUser._id]),
+        friends: updatedCurrentFriends,
         friendsRequests: (currentUser.friendsRequests || []).filter(
           (friendId) => friendId !== senderUser._id.toString()
         ),
@@ -274,19 +340,25 @@ router.put("/:id/remove-friend", checkAuthenticated, async (req, res) => {
       }
     }
 
-    // 2. 상대방의 friends에서 현재 유저의 id를 제거
+    // 2. 상대방의 friends에서 현재 유저의 id를 제거 (중복 제거)
+    const userFriends = [...new Set(user.friends || [])];
+    const updatedUserFriends = userFriends.filter(
+      (friendId) => friendId !== req.user._id.toString()
+    );
+
     await User.findByIdAndUpdate(user._id, {
-      friends: (user.friends || []).filter(
-        (friendId) => friendId !== req.user._id.toString()
-      ),
+      friends: updatedUserFriends,
     });
 
-    // 3. 현재 유저의 friends에서 상대방의 id를 제거
+    // 3. 현재 유저의 friends에서 상대방의 id를 제거 (중복 제거)
     const currentUser = await User.findById(req.user._id);
+    const currentUserFriends = [...new Set(currentUser.friends || [])];
+    const updatedCurrentUserFriends = currentUserFriends.filter(
+      (friendId) => friendId !== req.params.id.toString()
+    );
+
     await User.findByIdAndUpdate(req.user._id, {
-      friends: (currentUser.friends || []).filter(
-        (friendId) => friendId !== req.params.id.toString()
-      ),
+      friends: updatedCurrentUserFriends,
     });
 
     if (req.xhr || req.headers.accept.includes("application/json")) {
@@ -352,10 +424,35 @@ router.get("/list/:userId", checkAuthenticated, async (req, res) => {
       });
     }
 
-    // 친구 목록 반환
+    // 중복 제거
+    const uniqueFriends = [...new Set(user.friends || [])];
+
+    // 존재하는 사용자만 필터링
+    const validFriends = [];
+    for (const friendId of uniqueFriends) {
+      try {
+        const friendUser = await User.findById(friendId);
+        if (friendUser) {
+          validFriends.push(friendId);
+        }
+      } catch (err) {
+        // 오류 발생 시 해당 친구 제외
+      }
+    }
+
+    // 만약 유효한 친구 목록이 원래와 다르다면 DB 업데이트
+    if (
+      validFriends.length !== user.friends?.length ||
+      !validFriends.every((id) => user.friends.includes(id))
+    ) {
+      await User.findByIdAndUpdate(req.params.userId, {
+        friends: validFriends,
+      });
+    }
+
     return res.status(200).json({
       success: true,
-      friends: user.friends || [],
+      friends: validFriends,
     });
   } catch (err) {
     console.error("친구 목록 조회 오류:", err);

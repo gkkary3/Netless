@@ -37,7 +37,6 @@ async function checkPostOwnerShip(req, res, next) {
       const foundPost = await Post.findById(req.params.id);
       if (!foundPost) {
         req.flash("error", "포스트를 찾을 수 없습니다!");
-        console.log("포스트를 찾을 수 없습니다!");
         return res.redirect(`${process.env.CLIENT_URL}/posts`);
       }
       if (foundPost.author.id.equals(req.user._id)) {
@@ -45,17 +44,14 @@ async function checkPostOwnerShip(req, res, next) {
         next();
       } else {
         req.flash("error", "권한이 없습니다!");
-        console.log("권한이 없습니다!");
         return res.redirect(`${process.env.CLIENT_URL}/posts`);
       }
     } catch (err) {
       req.flash("error", "오류가 발생했습니다!");
-      console.log("오류가 발생했습니다!");
       return res.redirect(`${process.env.CLIENT_URL}/posts`);
     }
   } else {
     req.flash("error", "로그인 후 이용해주세요!");
-    console.log("로그인 후 이용해주세요!");
     res.redirect(process.env.CLIENT_URL || "http://localhost:3000/login");
   }
 }

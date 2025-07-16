@@ -50,11 +50,9 @@ const sendMail = (to, name, type) => {
   const mail = getEmailData(to, name, type);
   transporter.sendMail(mail, (error, response) => {
     if (error) {
-      console.log(error);
-    } else {
-      console.log("email sent successfully");
+      return callback(error);
     }
-    transporter.close();
+    return callback(null, response);
   });
 };
 

@@ -28,23 +28,19 @@ export const SocketProvider = ({ children }) => {
 
       // 소켓 연결 이벤트 처리
       socketInstance.on("connect", () => {
-        console.log("소켓 연결됨");
         setConnected(true);
         setReconnecting(false);
       });
 
       socketInstance.on("disconnect", () => {
-        console.log("소켓 연결 끊김");
         setConnected(false);
       });
 
       socketInstance.on("reconnect_attempt", (attemptNumber) => {
-        console.log(`재연결 시도 ${attemptNumber}`);
         setReconnecting(true);
       });
 
       socketInstance.on("reconnect_failed", () => {
-        console.log("재연결 실패");
         setReconnecting(false);
       });
 

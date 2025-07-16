@@ -49,22 +49,11 @@ router.get("/users/search", isLoggedIn, async (req, res) => {
       .select("_id username email profileImage")
       .limit(10);
 
-    console.log(
-      "Found users:",
-      users.map((u) => ({
-        username: u.username,
-        profileImage: u.profileImage,
-        profileImageType: typeof u.profileImage,
-        hasProfileImage: !!u.profileImage,
-      }))
-    );
-
     // 친구인지 표시
     const usersWithFriendStatus = users.map((user) => {
       const isFriend =
         currentUser.friends &&
         currentUser.friends.includes(user._id.toString());
-      console.log("User profile image:", user.username, user.profileImage);
       return {
         _id: user._id,
         username: user.username,
