@@ -171,10 +171,6 @@ const AuthModal = ({ isOpen, onClose }) => {
     if (result.success) {
       toast.success("로그인 성공!");
       onClose();
-      // OAuth처럼 환경변수 사용
-      const clientUrl =
-        process.env.REACT_APP_CLIENT_URL || "http://localhost:3000";
-      window.location.href = `${clientUrl}/posts`;
     } else {
       toast.error(result.error || "로그인에 실패했습니다.");
     }

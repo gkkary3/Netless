@@ -14,14 +14,6 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setError(null);
-
-      // 디버깅: 실제 API URL 확인
-      console.log("클라이언트 로그인 요청:", {
-        API_URL,
-        loginURL: `${API_URL}/auth/login`,
-        email,
-      });
-
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: {
@@ -31,15 +23,8 @@ export const AuthProvider = ({ children }) => {
         body: JSON.stringify({ email, password }),
       });
 
-      console.log("로그인 응답:", {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-      });
-
       if (!response.ok) {
         const data = await response.json();
-        console.log("로그인 에러 응답:", data);
         throw new Error(data.error || "로그인에 실패했습니다.");
       }
 

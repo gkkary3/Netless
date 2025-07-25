@@ -10,26 +10,11 @@ const sendMail = require("./mail/mail");
 const emailVerificationStore = {};
 
 usersRouter.post("/login", (req, res, next) => {
-  console.log("로그인 요청:", {
-    email: req.body.email,
-    origin: req.get("Origin"),
-    userAgent: req.get("User-Agent"),
-    sessionID: req.sessionID,
-  });
-
   passport.authenticate("local", (err, user, info) => {
-    console.log("Passport 인증 결과:", {
-      err: err ? err.message : null,
-      user: user ? { id: user._id, username: user.username } : null,
-      info: info ? info.msg : null,
-    });
-
     if (err) {
-      console.error("로그인 에러:", err);
       return res.status(500).json({ message: "Internal server error" });
     }
     if (!user) {
-      console.log("로그인 실패:", info?.msg);
       return res
         .status(401)
         .json({ error: info?.msg || "로그인에 실패했습니다." });
@@ -37,7 +22,6 @@ usersRouter.post("/login", (req, res, next) => {
 
     req.login(user, async (err) => {
       if (err) {
-        console.error("req.login 에러:", err);
         return res
           .status(500)
           .json({ error: "로그인 처리 중 에러가 발생했습니다." });
@@ -53,47 +37,42 @@ usersRouter.post("/login", (req, res, next) => {
         console.error("온라인 상태 업데이트 실패:", updateErr);
       }
 
-      // 배포 환경 디버깅
-      console.log("로그인 성공:", {
-        userId: user._id,
-        username: user.username,
-        sessionID: req.sessionID,
-        isAuthenticated: req.isAuthenticated(),
-      });
-
       return res.json({ success: true, user });
     });
   })(req, res, next);
 });
 
 usersRouter.get("/check", (req, res) => {
-  // 배포 환경 디버깅
-  console.log("인증 체크:", {
-    sessionID: req.sessionID,
-    isAuthenticated: req.isAuthenticated(),
-    user: req.user ? { id: req.user._id, username: req.user.username } : null,
-    cookies: req.headers.cookie,
-  });
-
   if (req.isAuthenticated()) {
-    res.json({ authenticated: true, user: req.user });
+    return res.json({ authenticated: true, user: req.user });
   } else {
-    res.json({ authenticated: false });
+    return res.json({ authenticated: false });
   }
 });
 
-usersRouter.post("/logout", (req, res) => {
-  req.logout((err) => {
+usersRouter.post("/logout", async (req, res, next) => {
+  const userId = req.user?._id;
+
+  req.logOut(async function (err) {
     if (err) {
-      return res.status(500).json({ error: "로그아웃에 실패했습니다." });
+      return res
+        .status(500)
+        .json({ error: "로그아웃 중 오류가 발생했습니다." });
     }
-    req.session.destroy((err) => {
-      if (err) {
-        return res.status(500).json({ error: "세션 종료에 실패했습니다." });
+
+    // 온라인 상태 업데이트
+    if (userId) {
+      try {
+        await User.findByIdAndUpdate(userId, {
+          isOnline: false,
+          lastSeen: new Date(),
+        });
+      } catch (updateErr) {
+        console.error("오프라인 상태 업데이트 실패:", updateErr);
       }
-      res.clearCookie("connect.sid");
-      res.json({ success: true });
-    });
+    }
+
+    return res.json({ success: true });
   });
 });
 

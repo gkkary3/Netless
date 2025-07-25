@@ -29,14 +29,6 @@ require("dotenv").config();
 require("./config/passport");
 
 const cookieEncryptionKey = process.env.SESSION_SECRET;
-
-// 배포 환경 디버깅
-console.log("=== 환경 디버깅 ===");
-console.log("NODE_ENV:", process.env.NODE_ENV);
-console.log("CLIENT_URL:", process.env.CLIENT_URL);
-console.log("SESSION_SECRET 존재:", !!process.env.SESSION_SECRET);
-console.log("MONGODB_URI 존재:", !!process.env.MONGODB_URI);
-
 // Proxy 설정 추가
 app.set("trust proxy", 1);
 // 미들웨어 설정
@@ -68,12 +60,9 @@ const sessionMiddleware = session({
   cookie: {
     maxAge: 1000 * 60 * 60, // 1시간
     // 개발 환경
-    // sameSite: "lax", // 크로스 사이트 쿠키 허용
-    // secure: false, // HTTPS에서만 쿠키 전송
+    sameSite: "lax", // 크로스 사이트 쿠키 허용
+    secure: false, // HTTPS에서만 쿠키 전송
 
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    secure: process.env.NODE_ENV === "production" ? true : false,
-    // domain 설정 제거 - 브라우저가 자동 처리하도록
     // 배포 환경
     // sameSite: "none", // 크로스 사이트 쿠키 허용
     // secure: true, // HTTPS에서만 쿠키 전송
