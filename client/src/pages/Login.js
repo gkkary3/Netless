@@ -71,7 +71,8 @@ const Login = () => {
     setIsLoading(false);
 
     if (result.success) {
-      window.location.href = `${API_URL}/posts`;
+      // 환경변수의 CLIENT_URL을 사용하여 리다이렉트
+      window.location.href = `${CLIENT_URL}/posts`;
     }
   };
 

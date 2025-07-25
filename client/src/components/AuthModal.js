@@ -23,6 +23,8 @@ const AuthModal = ({ isOpen, onClose }) => {
   const [timerId, setTimerId] = useState(null);
 
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
+  const CLIENT_URL =
+    process.env.REACT_APP_CLIENT_URL || "http://localhost:3000";
 
   // 모달이 열릴 때 폼 데이터 초기화
   useEffect(() => {
@@ -171,6 +173,8 @@ const AuthModal = ({ isOpen, onClose }) => {
     if (result.success) {
       toast.success("로그인 성공!");
       onClose();
+      // 환경변수의 CLIENT_URL을 사용하여 리다이렉트
+      window.location.href = `${CLIENT_URL}/posts`;
     } else {
       toast.error(result.error || "로그인에 실패했습니다.");
     }
@@ -205,6 +209,8 @@ const AuthModal = ({ isOpen, onClose }) => {
     if (result.success) {
       toast.success("회원가입 성공!");
       onClose();
+      // 환경변수의 CLIENT_URL을 사용하여 리다이렉트
+      window.location.href = `${CLIENT_URL}/posts`;
     }
   };
 
