@@ -64,15 +64,24 @@ const Login = () => {
   }, []);
 
   const handleSubmit = async (e) => {
+    console.log("handleSubmit 함수 진입!");
+    console.log("이벤트:", e);
+    console.log("email:", email);
+    console.log("password:", password);
+
     e.preventDefault();
     setIsLoading(true);
 
+    console.log("로그인 시도 중...");
     const result = await login(email, password);
+    console.log("로그인 결과:", result);
+
     setIsLoading(false);
 
     if (result.success) {
       // .env의 REACT_APP_CLIENT_URL을 사용하여 리다이렉트
       console.log("CLIENT_URL:", CLIENT_URL);
+      console.log("리다이렉트 시도:", `${CLIENT_URL}/posts`);
 
       window.location.href = `${CLIENT_URL}/posts`;
     }
