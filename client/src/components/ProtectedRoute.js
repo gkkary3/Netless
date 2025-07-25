@@ -10,14 +10,14 @@ const ProtectedRoute = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-100">
-        <div className="w-12 h-12 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600"></div>
+        <div className="w-12 h-12 rounded-full border-4 border-blue-200 animate-spin border-t-blue-600"></div>
       </div>
     );
   }
 
-  // 인증되지 않은 사용자는 로그인 페이지로 리디렉션
+  // 인증되지 않은 사용자는 posts 페이지로 리디렉션
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/posts" replace />;
   }
 
   // 인증된 사용자는 자식 컴포넌트 렌더링
