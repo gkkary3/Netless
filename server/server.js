@@ -36,6 +36,15 @@ const isProduction =
   process.env.RENDER ||
   process.env.PORT;
 
+// 디버깅을 위한 환경 정보 출력
+console.log("=== 서버 환경 정보 ===");
+console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("RENDER:", process.env.RENDER);
+console.log("PORT:", process.env.PORT);
+console.log("isProduction:", isProduction);
+console.log("CLIENT_URL:", process.env.CLIENT_URL);
+console.log("========================");
+
 // Proxy 설정 추가
 app.set("trust proxy", 1);
 // 미들웨어 설정
@@ -66,10 +75,8 @@ const sessionMiddleware = session({
   }),
   cookie: {
     maxAge: 1000 * 60 * 60, // 1시간
-    // 배포 환경에서 크로스 도메인 쿠키 설정
-    sameSite: isProduction ? "none" : "lax",
-    secure: isProduction ? true : false,
-    domain: isProduction ? ".kkary.com" : undefined, // 서브도메인 쿠키 공유
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production" ? true : false,
     httpOnly: true, // JavaScript에서 쿠키 접근 방지
   },
 });
