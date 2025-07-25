@@ -138,8 +138,14 @@ const Posts = () => {
                 !myFriends.includes(post.author.id)
             );
 
+            // 추천게시물이 없으면 최신 게시물로 대체 (항상 보이도록)
+            const finalRecommendedPosts =
+              recommendedPostsFiltered.length > 0
+                ? recommendedPostsFiltered
+                : sortedPosts;
+
             // 랜덤으로 최대 10개 선택
-            const shuffled = [...recommendedPostsFiltered].sort(
+            const shuffled = [...finalRecommendedPosts].sort(
               () => 0.5 - Math.random()
             );
             setRecommendedPosts(
@@ -148,18 +154,22 @@ const Posts = () => {
           } else {
             // 친구 정보를 가져올 수 없는 경우 모든 게시물을 추천으로 설정
             setMyAndFriendsPosts([]);
-            setRecommendedPosts(sortedPosts.slice(0, 4));
+            setRecommendedPosts(
+              sortedPosts.slice(0, Math.min(10, sortedPosts.length))
+            );
           }
         } catch (error) {
           console.error("친구 정보 가져오기 실패:", error);
-          // 에러 발생 시 모든 게시물을 추천으로 설정
+          // 에러 발생 시 내 게시물과 친구 게시물 구분 없이 모든 게시물을 추천으로 설정
           setMyAndFriendsPosts([]);
-          setRecommendedPosts(sortedPosts.slice(0, 4));
+          setRecommendedPosts(
+            sortedPosts.slice(0, Math.min(10, sortedPosts.length))
+          );
         }
       } else {
         // 비로그인 사용자인 경우
         setMyAndFriendsPosts([]);
-        // 모든 게시물을 추천 게시물로 설정 (최대 4개)
+        // 모든 게시물을 추천 게시물로 설정 (최대 4개 - 실시간 피드와 중복 방지)
         setRecommendedPosts(
           sortedPosts.slice(0, Math.min(4, sortedPosts.length))
         );
@@ -470,7 +480,7 @@ const Posts = () => {
                       </div>
 
                       {/* 비로그인 사용자 유도 메시지 */}
-                      {!user && allPosts.length > 4 && (
+                      {!user && allPosts.length > 3 && (
                         <div className="mt-6 p-6 bg-white rounded-lg border border-gray-200 text-center">
                           <h4 className="text-lg font-medium text-gray-900 mb-2">
                             더 많은 이야기가 기다리고 있어요
@@ -557,7 +567,7 @@ const Posts = () => {
                           onRequireAuth={handleRequireAuth}
                         />
                       ))}
-                      {allPosts.length > 4 && (
+                      {allPosts.length > 3 && (
                         <div className="w-full p-8 bg-white rounded-lg border border-gray-200 text-center">
                           <h3 className="text-xl font-medium text-gray-900 mb-3">
                             더 많은 이야기가 기다리고 있어요
