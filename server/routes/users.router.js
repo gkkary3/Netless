@@ -10,11 +10,26 @@ const sendMail = require("./mail/mail");
 const emailVerificationStore = {};
 
 usersRouter.post("/login", (req, res, next) => {
+  console.log("로그인 요청:", {
+    email: req.body.email,
+    origin: req.get("Origin"),
+    userAgent: req.get("User-Agent"),
+    sessionID: req.sessionID,
+  });
+
   passport.authenticate("local", (err, user, info) => {
+    console.log("Passport 인증 결과:", {
+      err: err ? err.message : null,
+      user: user ? { id: user._id, username: user.username } : null,
+      info: info ? info.msg : null,
+    });
+
     if (err) {
+      console.error("로그인 에러:", err);
       return res.status(500).json({ message: "Internal server error" });
     }
     if (!user) {
+      console.log("로그인 실패:", info?.msg);
       return res
         .status(401)
         .json({ error: info?.msg || "로그인에 실패했습니다." });
@@ -22,6 +37,7 @@ usersRouter.post("/login", (req, res, next) => {
 
     req.login(user, async (err) => {
       if (err) {
+        console.error("req.login 에러:", err);
         return res
           .status(500)
           .json({ error: "로그인 처리 중 에러가 발생했습니다." });

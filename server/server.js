@@ -73,7 +73,7 @@ const sessionMiddleware = session({
 
     sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: process.env.NODE_ENV === "production" ? true : false,
-    domain: process.env.NODE_ENV === "production" ? ".kkary.com" : undefined, // 서브도메인 간 쿠키 공유
+    // domain 설정 제거 - 브라우저가 자동 처리하도록
     // 배포 환경
     // sameSite: "none", // 크로스 사이트 쿠키 허용
     // secure: true, // HTTPS에서만 쿠키 전송
