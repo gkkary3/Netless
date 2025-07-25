@@ -535,16 +535,6 @@ const PostItem = ({
     setShowProfileModal(false);
   };
 
-  // 엔터키로 댓글 작성 처리
-  const handleCommentKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (commentText.trim()) {
-        handleSubmitComment(e);
-      }
-    }
-  };
-
   return (
     <div className="w-full max-w-2xl mb-4 overflow-hidden bg-white border rounded-lg shadow-md">
       <div className="p-4">
@@ -878,7 +868,6 @@ const PostItem = ({
                   placeholder="댓글을 입력하세요..."
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
-                  onKeyDown={handleCommentKeyDown}
                   rows={1}
                   style={{ resize: "none" }}
                 />

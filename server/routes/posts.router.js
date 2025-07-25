@@ -64,13 +64,7 @@ router.get("/", async (req, res) => {
     const User = require("../models/users.model");
 
     const posts = await Post.find()
-      .populate({
-        path: "comments",
-        populate: {
-          path: "author.id",
-          select: "username profileImage",
-        },
-      })
+      .populate("comments")
       .sort({ createdAt: -1 });
 
     // 최신 프로필 정보 반영

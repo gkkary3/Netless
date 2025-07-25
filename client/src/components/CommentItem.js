@@ -41,16 +41,6 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
     }
   };
 
-  // 댓글 수정 시 엔터키 처리
-  const handleEditKeyDown = (e) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      if (editText.trim()) {
-        handleUpdateComment(e);
-      }
-    }
-  };
-
   // 드롭다운 토글
   const toggleDropdown = (e) => {
     e.stopPropagation();
@@ -206,20 +196,10 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
                 src={getProfileImageUrl()}
                 alt={comment.author?.username || "프로필"}
                 className="object-cover w-full h-full"
-                onError={(e) => {
-                  e.target.style.display = "none";
-                  e.target.nextSibling.style.display = "flex";
-                }}
               />
-            ) : null}
-            <div
-              className="flex items-center justify-center w-full h-full text-sm font-semibold text-blue-600"
-              style={{
-                display: comment.author?.profileImage ? "none" : "flex",
-              }}
-            >
-              {getInitials()}
-            </div>
+            ) : (
+              getInitials()
+            )}
           </div>
 
           <div className="flex-1">
@@ -281,7 +261,6 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
                   className="w-full p-2 mb-2 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
-                  onKeyDown={handleEditKeyDown}
                   rows={2}
                   autoFocus
                 />

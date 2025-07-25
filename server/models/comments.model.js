@@ -9,7 +9,6 @@ const commentSchema = new mongoose.Schema(
         ref: "User",
       },
       username: String,
-      profileImage: String, // 프로필 이미지 필드 추가
     },
   },
   {
