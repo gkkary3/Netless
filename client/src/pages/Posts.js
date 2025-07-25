@@ -309,15 +309,19 @@ const Posts = () => {
           ) : (
             <div className="sticky z-10 w-full max-w-2xl p-4 mb-6 bg-white border-2 border-blue-100 rounded-lg shadow-lg top-16">
               <div className="flex items-center">
-                <div className="flex items-center justify-center w-10 h-10 mr-3 overflow-hidden font-semibold text-blue-600 bg-blue-100 rounded-full">
+                <div className="flex items-center justify-center w-10 h-10 mr-3 overflow-hidden font-semibold text-blue-600 bg-blue-100 rounded-full flex-shrink-0">
                   ?
                 </div>
                 <div
-                  className="flex items-center justify-between w-full p-3 font-medium text-blue-600 transition-all duration-200 rounded-full shadow-sm cursor-pointer bg-blue-50 hover:bg-blue-100"
+                  className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full p-3 font-medium text-blue-600 transition-all duration-200 rounded-full shadow-sm cursor-pointer bg-blue-50 hover:bg-blue-100"
                   onClick={handleRequireAuth}
                 >
-                  <span className="ml-2">무슨 생각을 하고 계신가요?</span>
-                  <span className="text-sm text-blue-500">로그인하기</span>
+                  <span className="ml-2 text-sm sm:text-base">
+                    무슨 생각을 하고 계신가요?
+                  </span>
+                  <span className="text-xs sm:text-sm text-blue-500 ml-2 sm:ml-0 mt-1 sm:mt-0">
+                    로그인하기
+                  </span>
                 </div>
               </div>
             </div>

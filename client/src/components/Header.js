@@ -235,15 +235,27 @@ const Header = () => {
                         <div className="flex items-center justify-center w-8 h-8 mr-2 overflow-hidden bg-gray-200 rounded-full">
                           {person.profileImage ? (
                             <img
-                              src={`${API_URL}/assets/profiles/${person.profileImage}`}
+                              src={
+                                person.profileImage.startsWith("http")
+                                  ? person.profileImage
+                                  : `${API_URL}/assets/profiles/${person.profileImage}`
+                              }
                               alt={person.username}
                               className="object-cover w-full h-full"
+                              onError={(e) => {
+                                e.target.style.display = "none";
+                                e.target.nextSibling.style.display = "flex";
+                              }}
                             />
-                          ) : (
-                            <div className="text-sm font-semibold text-gray-500">
-                              {person.username.charAt(0).toUpperCase()}
-                            </div>
-                          )}
+                          ) : null}
+                          <div
+                            className="flex items-center justify-center w-full h-full text-sm font-semibold text-gray-500"
+                            style={{
+                              display: person.profileImage ? "none" : "flex",
+                            }}
+                          >
+                            {person.username.charAt(0).toUpperCase()}
+                          </div>
                         </div>
                         <div>
                           <div className="font-medium">{person.username}</div>
