@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import PostItem from "../components/PostItem";
 import PostForm from "../components/PostForm";
 import Header from "../components/Header";
+import AuthModal from "../components/AuthModal";
 
 // 로딩 스피너 컴포넌트
 const LoadingSpinner = () => (
@@ -34,6 +35,7 @@ const Posts = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showRecommended, setShowRecommended] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -88,7 +90,7 @@ const Posts = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 모든 게시물 가져오기
+      // 모든 게시물 가져오기 - 로그인 여부에 상관없이 가능
       const postsResponse = await fetch(`${API_URL}/posts`, {
         credentials: "include",
         headers: {
@@ -101,38 +103,67 @@ const Posts = () => {
       }
 
       const postsData = await postsResponse.json();
-      setAllPosts(postsData);
+      // 최신순으로 정렬
+      const sortedPosts = postsData.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      setAllPosts(sortedPosts);
 
-      // 친구 목록 가져오기
-      const friendsResponse = await fetch(`${API_URL}/friends/user-friends`, {
-        credentials: "include",
-      });
+      if (user) {
+        // 로그인된 사용자인 경우 친구 목록 가져오기
+        try {
+          const friendsResponse = await fetch(
+            `${API_URL}/friends/user-friends`,
+            {
+              credentials: "include",
+            }
+          );
 
-      if (!friendsResponse.ok) {
-        throw new Error("친구 정보를 불러오는데 실패했습니다.");
+          if (friendsResponse.ok) {
+            const friendsData = await friendsResponse.json();
+            const myFriends = friendsData.friends || [];
+
+            // 내 게시물과 친구 게시물 필터링
+            const myAndFriendsPostsFiltered = sortedPosts.filter(
+              (post) =>
+                post.author.id === user._id ||
+                myFriends.includes(post.author.id)
+            );
+            setMyAndFriendsPosts(myAndFriendsPostsFiltered);
+
+            // 추천 게시물 필터링 (내 게시물과 친구 게시물이 아닌 것)
+            const recommendedPostsFiltered = sortedPosts.filter(
+              (post) =>
+                post.author.id !== user._id &&
+                !myFriends.includes(post.author.id)
+            );
+
+            // 랜덤으로 최대 10개 선택
+            const shuffled = [...recommendedPostsFiltered].sort(
+              () => 0.5 - Math.random()
+            );
+            setRecommendedPosts(
+              shuffled.slice(0, Math.min(10, shuffled.length))
+            );
+          } else {
+            // 친구 정보를 가져올 수 없는 경우 모든 게시물을 추천으로 설정
+            setMyAndFriendsPosts([]);
+            setRecommendedPosts(sortedPosts.slice(0, 4));
+          }
+        } catch (error) {
+          console.error("친구 정보 가져오기 실패:", error);
+          // 에러 발생 시 모든 게시물을 추천으로 설정
+          setMyAndFriendsPosts([]);
+          setRecommendedPosts(sortedPosts.slice(0, 4));
+        }
+      } else {
+        // 비로그인 사용자인 경우
+        setMyAndFriendsPosts([]);
+        // 모든 게시물을 추천 게시물로 설정 (최대 4개)
+        setRecommendedPosts(
+          sortedPosts.slice(0, Math.min(4, sortedPosts.length))
+        );
       }
-
-      const friendsData = await friendsResponse.json();
-      const myFriends = friendsData.friends || [];
-
-      // 내 게시물과 친구 게시물 필터링
-      const myAndFriendsPostsFiltered = postsData.filter(
-        (post) =>
-          post.author.id === user._id || myFriends.includes(post.author.id)
-      );
-      setMyAndFriendsPosts(myAndFriendsPostsFiltered);
-
-      // 추천 게시물 필터링 (내 게시물과 친구 게시물이 아닌 것)
-      const recommendedPostsFiltered = postsData.filter(
-        (post) =>
-          post.author.id !== user._id && !myFriends.includes(post.author.id)
-      );
-
-      // 랜덤으로 최대 10개 선택 (또는 배열 길이가 10보다 작으면 모두 선택)
-      const shuffled = [...recommendedPostsFiltered].sort(
-        () => 0.5 - Math.random()
-      );
-      setRecommendedPosts(shuffled.slice(0, Math.min(10, shuffled.length)));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -142,7 +173,7 @@ const Posts = () => {
 
   useEffect(() => {
     fetchData();
-  }, [user._id]);
+  }, [user]);
 
   // 스크롤 감지 설정
   useEffect(() => {
@@ -245,9 +276,18 @@ const Posts = () => {
     setShowRecommended(!showRecommended);
   };
 
-  // 내 피드로 이동
+  // 내 피드로 이동 (로그인 필요)
   const goToMyFeed = () => {
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
     navigate("/my-feed");
+  };
+
+  // 로그인이 필요한 액션 처리
+  const handleRequireAuth = () => {
+    setShowAuthModal(true);
   };
 
   return (
@@ -263,10 +303,27 @@ const Posts = () => {
         )}
 
         <div className="flex flex-col items-center">
-          {/* 게시물 작성 폼 - 항상 표시 */}
-          <PostForm onPostCreated={fetchData} />
+          {/* 게시물 작성 폼 - 로그인된 사용자만 표시 */}
+          {user ? (
+            <PostForm onPostCreated={fetchData} />
+          ) : (
+            <div className="sticky z-10 w-full max-w-2xl p-4 mb-6 bg-white border-2 border-blue-100 rounded-lg shadow-lg top-16">
+              <div className="flex items-center">
+                <div className="flex items-center justify-center w-10 h-10 mr-3 overflow-hidden font-semibold text-blue-600 bg-blue-100 rounded-full">
+                  ?
+                </div>
+                <div
+                  className="flex items-center justify-between w-full p-3 font-medium text-blue-600 transition-all duration-200 rounded-full shadow-sm cursor-pointer bg-blue-50 hover:bg-blue-100"
+                  onClick={handleRequireAuth}
+                >
+                  <span className="ml-2">무슨 생각을 하고 계신가요?</span>
+                  <span className="text-sm text-blue-500">로그인하기</span>
+                </div>
+              </div>
+            </div>
+          )}
 
-          {/* 추천 게시물 섹션 - 로딩 상태에 따라 스켈레톤 또는 실제 콘텐츠 표시 */}
+          {/* 추천 게시물 섹션 */}
           <Suspense fallback={<LoadingSpinner />}>
             {loading && recommendedPosts.length === 0 ? (
               <div className="w-full max-w-2xl mb-6">
@@ -332,7 +389,7 @@ const Posts = () => {
                           </svg>
                         </button>
 
-                        {/* 게시물 슬라이더 - 수평 스크롤 방식으로 변경 */}
+                        {/* 게시물 슬라이더 */}
                         <div className="overflow-hidden">
                           <div
                             ref={sliderScrollRef}
@@ -362,6 +419,7 @@ const Posts = () => {
                                     onDeletePost={handleDeletePost}
                                     onUpdatePost={handleUpdatePost}
                                     isCompact={true}
+                                    onRequireAuth={handleRequireAuth}
                                   />
                                 </div>
                               </div>
@@ -406,6 +464,24 @@ const Posts = () => {
                           />
                         ))}
                       </div>
+
+                      {/* 비로그인 사용자 유도 메시지 */}
+                      {!user && allPosts.length > 4 && (
+                        <div className="mt-6 p-6 bg-white rounded-lg border border-gray-200 text-center">
+                          <h4 className="text-lg font-medium text-gray-900 mb-2">
+                            더 많은 이야기가 기다리고 있어요
+                          </h4>
+                          <p className="text-sm text-gray-600 mb-4">
+                            나만의 피드를 만들고 다양한 사람들과 소통해보세요
+                          </p>
+                          <button
+                            onClick={handleRequireAuth}
+                            className="px-4 py-1.5 text-sm text-blue-600 font-medium border border-blue-600 rounded-md hover:bg-blue-50 transition-colors duration-200"
+                          >
+                            시작하기
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -413,52 +489,108 @@ const Posts = () => {
             )}
           </Suspense>
 
-          {/* 내 게시물과 친구 게시물 섹션 - 로딩 상태에 따라 스켈레톤 또는 실제 콘텐츠 표시 */}
+          {/* 내 피드/실사용자 피드 섹션 */}
           <div className="w-full max-w-2xl">
             <div className="flex items-center justify-between p-3 mb-2 bg-white rounded-lg shadow">
-              <h2 className="text-lg font-semibold text-blue-600">내 피드</h2>
-              <button
-                onClick={goToMyFeed}
-                className="px-3 py-1 text-sm text-blue-600 border border-blue-500 rounded-lg hover:bg-blue-50"
-              >
-                내 피드 보기
-              </button>
+              <h2 className="text-lg font-semibold text-blue-600">
+                {user ? "내 피드" : "실시간 피드"}
+              </h2>
+              {user && (
+                <button
+                  onClick={goToMyFeed}
+                  className="px-3 py-1 text-sm text-blue-600 border border-blue-500 rounded-lg hover:bg-blue-50"
+                >
+                  내 피드 보기
+                </button>
+              )}
             </div>
 
             <Suspense fallback={<FeedSkeleton />}>
               {loading ? (
                 <FeedSkeleton />
-              ) : myAndFriendsPosts.length === 0 ? (
-                <div className="w-full p-8 py-10 text-center bg-white rounded-lg shadow-md">
-                  <p className="mb-4 text-xl text-gray-500">
-                    게시물이 없습니다.
-                  </p>
-                  <p className="text-gray-600">
-                    위 폼에서 첫 게시물을 작성하거나 친구를 추가해보세요!
-                  </p>
-                </div>
               ) : (
                 <div className="space-y-4">
-                  {myAndFriendsPosts.map((post) => (
-                    <PostItem
-                      key={`feed-${post._id}`}
-                      post={post}
-                      onDeletePost={handleDeletePost}
-                      onUpdatePost={handleUpdatePost}
-                    />
-                  ))}
+                  {user ? (
+                    // 로그인된 사용자: 내 게시물과 친구 게시물
+                    myAndFriendsPosts.length === 0 ? (
+                      <div className="w-full p-8 py-10 text-center bg-white rounded-lg shadow-md">
+                        <p className="mb-4 text-xl text-gray-500">
+                          게시물이 없습니다.
+                        </p>
+                        <p className="text-gray-600">
+                          위 폼에서 첫 게시물을 작성하거나 친구를 추가해보세요!
+                        </p>
+                      </div>
+                    ) : (
+                      myAndFriendsPosts.map((post) => (
+                        <PostItem
+                          key={`feed-${post._id}`}
+                          post={post}
+                          onDeletePost={handleDeletePost}
+                          onUpdatePost={handleUpdatePost}
+                          onRequireAuth={handleRequireAuth}
+                        />
+                      ))
+                    )
+                  ) : // 비로그인 사용자: 모든 게시물을 최신순으로
+                  allPosts.length === 0 ? (
+                    <div className="w-full p-8 py-10 text-center bg-white rounded-lg shadow-md">
+                      <p className="mb-4 text-xl text-gray-500">
+                        게시물이 없습니다.
+                      </p>
+                      <p className="text-gray-600">
+                        로그인하여 첫 게시물을 작성해보세요!
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      {allPosts.slice(0, 4).map((post) => (
+                        <PostItem
+                          key={`all-${post._id}`}
+                          post={post}
+                          onDeletePost={handleDeletePost}
+                          onUpdatePost={handleUpdatePost}
+                          onRequireAuth={handleRequireAuth}
+                        />
+                      ))}
+                      {allPosts.length > 4 && (
+                        <div className="w-full p-8 bg-white rounded-lg border border-gray-200 text-center">
+                          <h3 className="text-xl font-medium text-gray-900 mb-3">
+                            더 많은 이야기가 기다리고 있어요
+                          </h3>
+                          <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+                            다른 사람들의 생각과 일상을 더 깊이 들여다보고 나의
+                            이야기도 함께 나눠보세요
+                          </p>
+                          <button
+                            onClick={handleRequireAuth}
+                            className="px-4 py-1.5 text-sm text-blue-600 font-medium border border-blue-600 rounded-md hover:bg-blue-50 transition-colors duration-200"
+                          >
+                            더 보기
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
               )}
             </Suspense>
 
-            {loading && myAndFriendsPosts.length > 0 && (
-              <div className="py-4 text-center">
-                <LoadingSpinner />
-              </div>
-            )}
+            {loading &&
+              (user ? myAndFriendsPosts.length > 0 : allPosts.length > 0) && (
+                <div className="py-4 text-center">
+                  <LoadingSpinner />
+                </div>
+              )}
           </div>
         </div>
       </div>
+
+      {/* 로그인/회원가입 모달 */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 };

@@ -230,30 +230,76 @@ const ProfileDropdown = () => {
         </button>
 
         {showDropdown && (
-          <div className="absolute right-0 z-10 w-48 mt-2 bg-white border rounded-md shadow-lg">
-            <div className="px-4 py-3 border-b">
-              <p className="font-medium text-gray-900">{user?.username}</p>
-              <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+          <div className="absolute right-0 z-10 w-48 mt-2 bg-white border border-gray-100 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+            <div className="px-3 py-2 border-b border-gray-50">
+              <p className="font-medium text-sm text-gray-900 truncate">
+                {user?.username}
+              </p>
+              <p className="text-xs text-gray-500 truncate">{user?.email}</p>
             </div>
             <div className="py-1">
               <button
                 onClick={handleGoToMyFeed}
-                className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 mr-2 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v10m2 2v-6m2 6h-6"
+                  />
+                </svg>
                 내 피드
               </button>
               <button
                 onClick={openProfileModal}
-                className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                className="flex items-center w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-150"
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-4 h-4 mr-2 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
+                </svg>
                 내 프로필
               </button>
-              <button
-                onClick={handleLogout}
-                className="block w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-gray-100"
-              >
-                로그아웃
-              </button>
+              <div className="border-t border-gray-50 mt-1 pt-1">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors duration-150"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="w-4 h-4 mr-2 text-red-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  로그아웃
+                </button>
+              </div>
             </div>
           </div>
         )}

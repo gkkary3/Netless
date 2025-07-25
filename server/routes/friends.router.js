@@ -3,6 +3,33 @@ const { checkAuthenticated } = require("../middlewares/auth");
 const User = require("../models/users.model");
 const router = express.Router();
 
+// 공개 사용자 검색 엔드포인트 (비로그인 사용자도 사용 가능)
+router.get("/public/search", async (req, res) => {
+  try {
+    const users = await User.find({}).select(
+      "_id username email profileImage introduction"
+    );
+
+    return res.status(200).json({
+      success: true,
+      users: users.map((user) => ({
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        profileImage: user.profileImage,
+        introduction: user.introduction,
+      })),
+    });
+  } catch (err) {
+    console.error("공개 사용자 검색 오류:", err);
+    return res.status(500).json({
+      success: false,
+      message: "사용자 검색 중 오류가 발생했습니다.",
+      users: [],
+    });
+  }
+});
+
 // 사용자 친구 및 친구 요청 정보 가져오기
 router.get("/user-friends", checkAuthenticated, async (req, res) => {
   try {

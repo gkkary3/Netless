@@ -18,8 +18,8 @@ import "react-toastify/dist/ReactToastify.css";
 
 // 글로벌 Fallback 로딩 컴포넌트
 const GlobalLoadingSpinner = () => (
-  <div className="flex items-center justify-center h-screen bg-gray-100">
-    <div className="w-12 h-12 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600"></div>
+  <div className="flex justify-center items-center h-screen bg-gray-100">
+    <div className="w-12 h-12 rounded-full border-4 border-blue-200 animate-spin border-t-blue-600"></div>
   </div>
 );
 
@@ -30,9 +30,11 @@ function App() {
         <Router>
           <Suspense fallback={<GlobalLoadingSpinner />}>
             <Routes>
+              {/* 공개 라우트 - posts 페이지는 누구나 접근 가능 */}
+              <Route path="/posts" element={<Posts />} />
+
               {/* 보호된 라우트 - 인증된 사용자만 접근 가능 */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/posts" element={<Posts />} />
                 <Route path="/my-feed" element={<MyFeed />} />
                 <Route path="/feed/:userId" element={<MyFeed />} />
                 <Route
@@ -59,8 +61,8 @@ function App() {
                 <Route path="/signup" element={<Signup />} />
               </Route>
 
-              {/* 기본 리디렉션 */}
-              <Route path="/" element={<Navigate to="/login" />} />
+              {/* 기본 리디렉션 - 메인 페이지로 posts 페이지를 설정 */}
+              <Route path="/" element={<Navigate to="/posts" />} />
             </Routes>
           </Suspense>
 

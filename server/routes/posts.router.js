@@ -58,7 +58,7 @@ router.post(
   }
 );
 
-router.get("/", checkAuthenticated, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     // User 모델 참조를 위해 require
     const User = require("../models/users.model");

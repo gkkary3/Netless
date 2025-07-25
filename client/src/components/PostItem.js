@@ -6,7 +6,13 @@ import { toast } from "react-toastify";
 import CommentItem from "./CommentItem";
 import UserProfileModal from "./UserProfileModal";
 
-const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
+const PostItem = ({
+  post,
+  onDeletePost,
+  onUpdatePost,
+  isCompact = false,
+  onRequireAuth,
+}) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -40,6 +46,10 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
 
   // 작성자의 피드로 이동
   const goToAuthorFeed = () => {
+    if (!user) {
+      onRequireAuth && onRequireAuth();
+      return;
+    }
     if (showProfileModal) {
       setShowProfileModal(false);
     }
@@ -353,6 +363,11 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
 
   // 좋아요 처리 함수
   const handleLike = async () => {
+    if (!user) {
+      onRequireAuth && onRequireAuth();
+      return;
+    }
+
     if (likeLoading) return;
 
     setLikeLoading(true);
@@ -393,12 +408,21 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
 
   // 댓글 기능 알림
   const handleCommentClick = () => {
+    if (!user) {
+      onRequireAuth && onRequireAuth();
+      return;
+    }
     setShowComments(!showComments);
   };
 
   // 댓글 작성 처리
   const handleSubmitComment = async (e) => {
     e.preventDefault();
+
+    if (!user) {
+      onRequireAuth && onRequireAuth();
+      return;
+    }
 
     if (!commentText.trim()) {
       toast.warning("댓글 내용을 입력해주세요.");
@@ -494,6 +518,10 @@ const PostItem = ({ post, onDeletePost, onUpdatePost, isCompact = false }) => {
   // 프로필 모달 열기
   const openProfileModal = (e) => {
     e.stopPropagation();
+    if (!user) {
+      onRequireAuth && onRequireAuth();
+      return;
+    }
     setProfileUser({
       _id: post.author.id,
       username: post.author.username,

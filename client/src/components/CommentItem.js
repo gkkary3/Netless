@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import UserProfileModal from "./UserProfileModal";
 
@@ -12,6 +13,7 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
   const [profileUser, setProfileUser] = useState(null);
 
   const { user } = useAuth();
+  const navigate = useNavigate();
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
   // 현재 사용자가 댓글 작성자인지 확인
@@ -30,6 +32,13 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
   // 프로필 모달 닫기
   const closeProfileModal = () => {
     setShowProfileModal(false);
+  };
+
+  // 피드 보기 함수
+  const handleViewFeed = () => {
+    if (profileUser?._id) {
+      navigate(`/feed/${profileUser._id}`);
+    }
   };
 
   // 드롭다운 토글
@@ -286,6 +295,7 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
           user={profileUser}
           isOpen={showProfileModal}
           onClose={closeProfileModal}
+          onViewFeed={handleViewFeed}
         />
       )}
     </>
