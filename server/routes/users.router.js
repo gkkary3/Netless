@@ -44,35 +44,24 @@ usersRouter.post("/login", (req, res, next) => {
 
 usersRouter.get("/check", (req, res) => {
   if (req.isAuthenticated()) {
-    return res.json({ authenticated: true, user: req.user });
+    res.json({ authenticated: true, user: req.user });
   } else {
-    return res.json({ authenticated: false });
+    res.json({ authenticated: false });
   }
 });
 
-usersRouter.post("/logout", async (req, res, next) => {
-  const userId = req.user?._id;
-
-  req.logOut(async function (err) {
+usersRouter.post("/logout", (req, res) => {
+  req.logout((err) => {
     if (err) {
-      return res
-        .status(500)
-        .json({ error: "로그아웃 중 오류가 발생했습니다." });
+      return res.status(500).json({ error: "로그아웃에 실패했습니다." });
     }
-
-    // 온라인 상태 업데이트
-    if (userId) {
-      try {
-        await User.findByIdAndUpdate(userId, {
-          isOnline: false,
-          lastSeen: new Date(),
-        });
-      } catch (updateErr) {
-        console.error("오프라인 상태 업데이트 실패:", updateErr);
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ error: "세션 종료에 실패했습니다." });
       }
-    }
-
-    return res.json({ success: true });
+      res.clearCookie("connect.sid");
+      res.json({ success: true });
+    });
   });
 });
 

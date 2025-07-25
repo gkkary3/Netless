@@ -69,7 +69,10 @@ const Login = () => {
     setIsLoading(false);
 
     if (result.success) {
-      navigate("/posts");
+      // OAuth처럼 환경변수 사용
+      const clientUrl =
+        process.env.REACT_APP_CLIENT_URL || "http://localhost:3000";
+      window.location.href = `${clientUrl}/posts`;
     }
   };
 
