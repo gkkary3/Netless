@@ -7,6 +7,10 @@ const { profileUpload, deleteFromS3 } = require("../config/s3");
 
 // 업로드 미들웨어 에러 처리를 위한 래퍼 함수
 const uploadMiddleware = (req, res, next) => {
+  console.log("프로필 이미지 업로드 시작");
+  console.log("요청 파라미터:", req.params);
+  console.log("사용자:", req.user?._id);
+
   const upload = profileUpload.single("profileImage");
   upload(req, res, function (err) {
     if (err) {
@@ -16,6 +20,7 @@ const uploadMiddleware = (req, res, next) => {
         message: "파일 업로드 오류: " + err.message,
       });
     }
+    console.log("업로드된 파일 정보:", req.file);
     next();
   });
 };
@@ -120,8 +125,14 @@ router.put("/", checkIsMe, async (req, res) => {
 // 프로필 이미지 업로드
 router.put("/image", checkIsMe, uploadMiddleware, async (req, res) => {
   try {
+    console.log("프로필 이미지 업로드 API 호출됨");
+    console.log("요청 파라미터 ID:", req.params.id);
+    console.log("현재 사용자 ID:", req.user?._id);
+    console.log("업로드된 파일:", req.file);
+
     // 이미지 파일이 없는 경우
     if (!req.file) {
+      console.log("파일이 없음");
       return res.status(400).json({
         success: false,
         message: "이미지 파일이 필요합니다.",
@@ -130,16 +141,31 @@ router.put("/image", checkIsMe, uploadMiddleware, async (req, res) => {
 
     // 기존 프로필 이미지가 있다면 S3에서 삭제
     const user = await User.findById(req.params.id);
-    if (user.profileImage) {
-      // S3 URL에서 키 추출
-      const imageKey = user.profileImage.includes("amazonaws.com")
-        ? user.profileImage.split("/").slice(-2).join("/") // profiles/filename 형태로 추출
-        : user.profileImage; // 이미 키 형태인 경우
+    console.log("기존 사용자 정보:", {
+      id: user._id,
+      profileImage: user.profileImage,
+    });
 
-      if (imageKey.startsWith("profiles/")) {
-        await deleteFromS3(imageKey);
+    if (user.profileImage) {
+      try {
+        // S3 URL에서 키 추출
+        const imageKey = user.profileImage.includes("amazonaws.com")
+          ? user.profileImage.split("/").slice(-2).join("/") // profiles/filename 형태로 추출
+          : user.profileImage; // 이미 키 형태인 경우
+
+        console.log("삭제할 이미지 키:", imageKey);
+
+        if (imageKey.startsWith("profiles/")) {
+          await deleteFromS3(imageKey);
+          console.log("기존 이미지 삭제 완료");
+        }
+      } catch (deleteError) {
+        console.error("기존 이미지 삭제 실패 (계속 진행):", deleteError);
+        // 삭제 실패해도 새 이미지 업로드는 계속 진행
       }
     }
+
+    console.log("새 이미지 URL:", req.file.location);
 
     // 프로필 이미지 업데이트 (S3 URL 저장)
     const updatedUser = await User.findByIdAndUpdate(
@@ -148,6 +174,8 @@ router.put("/image", checkIsMe, uploadMiddleware, async (req, res) => {
       { new: true }
     ).select("-password");
 
+    console.log("사용자 정보 업데이트 완료:", updatedUser._id);
+
     return res.status(200).json({
       success: true,
       message: "프로필 이미지가 업데이트되었습니다.",
@@ -155,6 +183,7 @@ router.put("/image", checkIsMe, uploadMiddleware, async (req, res) => {
     });
   } catch (err) {
     console.error("프로필 이미지 업로드 오류:", err);
+    console.error("오류 스택:", err.stack);
     return res.status(500).json({
       success: false,
       message: "서버 오류: " + (err.message || "알 수 없는 오류"),

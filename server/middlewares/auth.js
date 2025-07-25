@@ -86,6 +86,18 @@ async function checkIsMe(req, res, next) {
     try {
       const user = await User.findById(req.params.id);
       if (!user) {
+        // JSON API 요청인 경우 JSON 응답 반환
+        if (
+          req.xhr ||
+          req.headers.accept === "application/json" ||
+          req.headers["content-type"]?.includes("application/json")
+        ) {
+          return res.status(404).json({
+            success: false,
+            message: "사용자를 찾을 수 없습니다.",
+          });
+        }
+
         req.flash("error", "User not found");
         return res.redirect(
           `${process.env.CLIENT_URL}/profile/` + req.user._id
@@ -94,16 +106,56 @@ async function checkIsMe(req, res, next) {
       if (user._id.equals(req.user._id)) {
         return next();
       } else {
+        // JSON API 요청인 경우 JSON 응답 반환
+        if (
+          req.xhr ||
+          req.headers.accept === "application/json" ||
+          req.headers["content-type"]?.includes("application/json")
+        ) {
+          return res.status(403).json({
+            success: false,
+            message: "권한이 없습니다.",
+          });
+        }
+
         req.flash("error", "Permission denied");
         return res.redirect(
           `${process.env.CLIENT_URL}/profile/` + req.user._id
         );
       }
     } catch (err) {
+      console.error("checkIsMe 에러:", err);
+
+      // JSON API 요청인 경우 JSON 응답 반환
+      if (
+        req.xhr ||
+        req.headers.accept === "application/json" ||
+        req.headers["content-type"]?.includes("application/json")
+      ) {
+        return res.status(500).json({
+          success: false,
+          message: "서버 오류가 발생했습니다.",
+        });
+      }
+
       req.flash("error", "User not found");
       return res.redirect(`${process.env.CLIENT_URL}/profile/` + req.user._id);
     }
   } else {
+    console.log("인증되지 않은 사용자");
+
+    // JSON API 요청인 경우 JSON 응답 반환
+    if (
+      req.xhr ||
+      req.headers.accept === "application/json" ||
+      req.headers["content-type"]?.includes("application/json")
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: "로그인이 필요합니다.",
+      });
+    }
+
     req.flash("error", "Please Login first!");
     res.redirect(process.env.CLIENT_URL || "http://localhost:3000/login");
   }

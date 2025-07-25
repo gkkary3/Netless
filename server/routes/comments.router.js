@@ -28,6 +28,7 @@ router.post("/", checkAuthenticated, async (req, res) => {
     // 생성한 댓글에 작성자 정보 넣어주기
     comment.author.id = req.user._id;
     comment.author.username = req.user.username;
+    comment.author.profileImage = req.user.profileImage; // 프로필 이미지도 저장
     await comment.save();
 
     // 포스트에 댓글 데이터를 넣어주기

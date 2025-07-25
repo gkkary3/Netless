@@ -198,7 +198,7 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
       <div className="py-3 border-b last:border-b-0">
         <div className="flex items-start">
           <div
-            className="flex items-center justify-center w-8 h-8 mr-2 overflow-hidden text-sm font-semibold text-blue-600 bg-blue-100 rounded-full cursor-pointer"
+            className="flex overflow-hidden justify-center items-center mr-2 w-8 h-8 text-sm font-semibold text-blue-600 bg-blue-100 rounded-full cursor-pointer"
             onClick={openProfileModal}
           >
             {comment.author?.profileImage ? (
@@ -246,16 +246,16 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
                   </button>
 
                   {showDropdown && (
-                    <div className="absolute right-0 z-10 w-24 mt-1 bg-white border rounded shadow-lg">
+                    <div className="absolute right-0 z-10 mt-1 w-24 bg-white rounded border shadow-lg">
                       <button
                         onClick={handleEditClick}
-                        className="block w-full px-3 py-1.5 text-sm text-left text-gray-700 hover:bg-gray-100"
+                        className="block px-3 py-1.5 w-full text-sm text-left text-gray-700 hover:bg-gray-100"
                       >
                         수정
                       </button>
                       <button
                         onClick={handleDeleteComment}
-                        className="block w-full px-3 py-1.5 text-sm text-left text-red-600 hover:bg-gray-100"
+                        className="block px-3 py-1.5 w-full text-sm text-left text-red-600 hover:bg-gray-100"
                       >
                         삭제
                       </button>
@@ -268,7 +268,7 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
             {isEditing ? (
               <form onSubmit={handleUpdateComment} className="mt-1">
                 <textarea
-                  className="w-full p-2 mb-2 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="p-2 mb-2 w-full text-sm rounded border focus:outline-none focus:ring-1 focus:ring-blue-500"
                   placeholder="댓글을 수정하세요... (Enter로 저장, Shift+Enter로 줄바꿈)"
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
