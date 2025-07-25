@@ -47,6 +47,26 @@ const LoginFormSkeleton = () => (
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 const CLIENT_URL = process.env.REACT_APP_CLIENT_URL || "http://localhost:3000";
 
+// 환경변수 디버깅
+console.log("=== 환경변수 확인 ===");
+console.log("REACT_APP_API_URL:", process.env.REACT_APP_API_URL);
+console.log("REACT_APP_CLIENT_URL:", process.env.REACT_APP_CLIENT_URL);
+console.log("API_URL:", API_URL);
+console.log("CLIENT_URL:", CLIENT_URL);
+console.log("현재 location:", window.location.href);
+console.log("===================");
+
+// 전역 에러 리스너 추가
+window.addEventListener("error", (e) => {
+  console.error("🚨 JavaScript 에러 발생:", e.error);
+  console.error("파일:", e.filename);
+  console.error("라인:", e.lineno);
+});
+
+window.addEventListener("unhandledrejection", (e) => {
+  console.error("🚨 Promise 에러 발생:", e.reason);
+});
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -83,12 +103,20 @@ const Login = () => {
       console.log("CLIENT_URL:", CLIENT_URL);
       console.log("리다이렉트 시도:", `${CLIENT_URL}/posts`);
 
-      window.location.href = `${CLIENT_URL}/posts`;
+      // 디버깅을 위해 3초 후 리다이렉트
+      console.log("3초 후 리다이렉트 실행...");
+      setTimeout(() => {
+        console.log("리다이렉트 실행!");
+        window.location.href = `${CLIENT_URL}/posts`;
+      }, 3000);
     }
   };
 
   // 소셜 로그인 처리 함수
   const handleSocialLogin = (provider) => {
+    console.log("🟢 소셜 로그인 버튼 클릭됨:", provider);
+    console.log("소셜 로그인 URL:", `${API_URL}/auth/${provider}`);
+
     // 전체 URL로 서버 엔드포인트 직접 호출
     window.location.href = `${API_URL}/auth/${provider}`;
   };
@@ -108,7 +136,13 @@ const Login = () => {
                 경계 없는 소통의 시작
               </p>
             </div>
-            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <form
+              className="mt-8 space-y-6"
+              onSubmit={(e) => {
+                console.log("🟡 폼 onSubmit 이벤트 발생!");
+                handleSubmit(e);
+              }}
+            >
               <div className="-space-y-px rounded-md shadow-sm">
                 <div>
                   <label htmlFor="email" className="sr-only">
@@ -150,6 +184,11 @@ const Login = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
+                  onClick={(e) => {
+                    console.log("🔴 로그인 버튼 클릭됨!");
+                    console.log("버튼 타입:", e.target.type);
+                    console.log("폼 요소:", e.target.form);
+                  }}
                   className="flex relative justify-center px-4 py-2 w-full text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-indigo-600 rounded-md border border-transparent shadow-md transition-all duration-200 group hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   {isLoading ? (
