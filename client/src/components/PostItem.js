@@ -546,11 +546,11 @@ const PostItem = ({
   };
 
   return (
-    <div className="w-full max-w-2xl mb-4 overflow-hidden bg-white border rounded-lg shadow-md">
+    <div className="overflow-hidden mb-4 w-full max-w-2xl bg-white rounded-lg border shadow-md">
       <div className="p-4">
         <div className="flex items-center mb-3">
           <div
-            className="flex items-center justify-center w-10 h-10 mr-3 overflow-hidden bg-gray-200 rounded-full cursor-pointer"
+            className="flex overflow-hidden justify-center items-center mr-3 w-10 h-10 bg-gray-200 rounded-full cursor-pointer"
             onClick={openProfileModal}
           >
             {post.author?.profileImage ? (
@@ -599,16 +599,16 @@ const PostItem = ({
               </button>
 
               {showDropdown && (
-                <div className="absolute right-0 z-10 w-32 mt-2 bg-white border rounded shadow-lg">
+                <div className="absolute right-0 z-10 mt-2 w-32 bg-white rounded border shadow-lg">
                   <button
                     onClick={openEditModal}
-                    className="block w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-2 w-full text-sm text-left text-gray-700 hover:bg-gray-100"
                   >
                     수정
                   </button>
                   <button
                     onClick={handleDeletePost}
-                    className="block w-full px-4 py-2 text-sm text-left text-red-600 hover:bg-gray-100"
+                    className="block px-4 py-2 w-full text-sm text-left text-red-600 hover:bg-gray-100"
                   >
                     삭제
                   </button>
@@ -657,15 +657,15 @@ const PostItem = ({
             <div
               className={`relative overflow-hidden bg-gray-100 rounded-md cursor-pointer ${
                 isCompact
-                  ? "w-14 h-14 inline-block mr-2"
-                  : "w-full h-96 mb-3 rounded-md"
+                  ? "inline-block mr-2 w-14 h-14"
+                  : "mb-3 w-full h-96 rounded-md"
               }`}
               onClick={openImageModal}
             >
               {/* 이미지 슬라이더 - 수평 스크롤 방식 */}
               <div
                 ref={sliderScrollRef}
-                className="flex w-full h-full overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+                className="flex overflow-x-auto w-full h-full scrollbar-hide snap-x snap-mandatory"
                 style={{
                   scrollbarWidth: "none",
                   msOverflowStyle: "none",
@@ -695,7 +695,7 @@ const PostItem = ({
                 <>
                   {/* 좌우 화살표 */}
                   <button
-                    className="absolute p-2 text-white transform -translate-y-1/2 bg-black bg-opacity-50 rounded-full left-3 top-1/2 hover:bg-opacity-70"
+                    className="absolute left-3 top-1/2 p-2 text-white bg-black bg-opacity-50 rounded-full transform -translate-y-1/2 hover:bg-opacity-70"
                     onClick={prevImage}
                   >
                     <svg
@@ -714,7 +714,7 @@ const PostItem = ({
                     </svg>
                   </button>
                   <button
-                    className="absolute p-2 text-white transform -translate-y-1/2 bg-black bg-opacity-50 rounded-full right-3 top-1/2 hover:bg-opacity-70"
+                    className="absolute right-3 top-1/2 p-2 text-white bg-black bg-opacity-50 rounded-full transform -translate-y-1/2 hover:bg-opacity-70"
                     onClick={nextImage}
                   >
                     <svg
@@ -734,7 +734,7 @@ const PostItem = ({
                   </button>
 
                   {/* 인디케이터 점 */}
-                  <div className="absolute left-0 right-0 flex justify-center bottom-3">
+                  <div className="flex absolute right-0 left-0 bottom-3 justify-center">
                     {post.images.map((_, index) => (
                       <div
                         key={index}
@@ -771,7 +771,7 @@ const PostItem = ({
             <div
               className={`overflow-hidden bg-gray-100 cursor-pointer ${
                 isCompact
-                  ? "w-14 h-14 inline-block rounded-md"
+                  ? "inline-block w-14 h-14 rounded-md"
                   : "w-full h-96 rounded-md"
               }`}
               onClick={openImageModal}
@@ -819,7 +819,7 @@ const PostItem = ({
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5 mr-1"
+              className="mr-1 w-5 h-5"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -861,7 +861,7 @@ const PostItem = ({
 
             {/* 댓글 작성 폼 */}
             <form onSubmit={handleSubmitComment} className="flex items-start">
-              <div className="flex items-center justify-center w-8 h-8 mr-2 overflow-hidden text-sm font-semibold text-blue-600 bg-blue-100 rounded-full">
+              <div className="flex overflow-hidden justify-center items-center mr-2 w-8 h-8 text-sm font-semibold text-blue-600 bg-blue-100 rounded-full">
                 {user?.profileImage ? (
                   <img
                     src={getCurrentUserProfileImageUrl()}
@@ -874,8 +874,8 @@ const PostItem = ({
               </div>
               <div className="relative flex-1">
                 <textarea
-                  className="w-full px-3 py-2 pr-16 text-sm border rounded-3xl focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="댓글을 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈)"
+                  className="px-3 py-2 pr-16 w-full text-sm rounded-3xl border focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="댓글을 입력하세요."
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   onKeyDown={handleCommentKeyDown}
@@ -884,7 +884,7 @@ const PostItem = ({
                 />
                 <button
                   type="submit"
-                  className="absolute text-blue-500 right-3 top-2 hover:text-blue-700 disabled:opacity-50"
+                  className="absolute top-2 right-3 text-blue-500 hover:text-blue-700 disabled:opacity-50"
                   disabled={isSubmittingComment || !commentText.trim()}
                 >
                   {isSubmittingComment ? (
@@ -944,7 +944,7 @@ const PostItem = ({
             >
               {/* 닫기 버튼 */}
               <button
-                className="absolute right-0 p-2 text-white bg-black bg-opacity-50 rounded-full -top-10 hover:bg-opacity-70"
+                className="absolute right-0 -top-10 p-2 text-white bg-black bg-opacity-50 rounded-full hover:bg-opacity-70"
                 onClick={closeImageModal}
               >
                 <svg
@@ -974,7 +974,7 @@ const PostItem = ({
               {post.images && post.images.length > 1 && (
                 <>
                   <button
-                    className="absolute p-3 text-white transform -translate-y-1/2 bg-black bg-opacity-50 rounded-full left-2 top-1/2 hover:bg-opacity-70"
+                    className="absolute left-2 top-1/2 p-3 text-white bg-black bg-opacity-50 rounded-full transform -translate-y-1/2 hover:bg-opacity-70"
                     onClick={prevImage}
                   >
                     <svg
@@ -993,7 +993,7 @@ const PostItem = ({
                     </svg>
                   </button>
                   <button
-                    className="absolute p-3 text-white transform -translate-y-1/2 bg-black bg-opacity-50 rounded-full right-2 top-1/2 hover:bg-opacity-70"
+                    className="absolute right-2 top-1/2 p-3 text-white bg-black bg-opacity-50 rounded-full transform -translate-y-1/2 hover:bg-opacity-70"
                     onClick={nextImage}
                   >
                     <svg
@@ -1013,12 +1013,12 @@ const PostItem = ({
                   </button>
 
                   {/* 이미지 카운터 */}
-                  <div className="absolute left-0 right-0 text-center text-white bottom-4">
+                  <div className="absolute right-0 left-0 bottom-4 text-center text-white">
                     {currentImageIndex + 1} / {post.images.length}
                   </div>
 
                   {/* 인디케이터 점 */}
-                  <div className="absolute left-0 right-0 flex justify-center bottom-10">
+                  <div className="flex absolute right-0 left-0 bottom-10 justify-center">
                     {post.images.map((_, index) => (
                       <div
                         key={`modal-dot-${index}`}
@@ -1044,14 +1044,14 @@ const PostItem = ({
       {/* 수정 모달 */}
       {showEditModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
+          className="flex fixed inset-0 z-50 justify-center items-center p-4 bg-black bg-opacity-50"
           onClick={closeEditModal}
         >
           <div
-            className="w-full max-w-lg p-6 bg-white rounded-lg shadow-xl"
+            className="p-6 w-full max-w-lg bg-white rounded-lg shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex justify-between items-center mb-4">
               <h3 className="text-xl font-semibold">게시물 수정</h3>
               <button
                 className="p-1 text-gray-500 rounded-full hover:bg-gray-100"
@@ -1077,7 +1077,7 @@ const PostItem = ({
             <form onSubmit={handleUpdatePost}>
               <div className="mb-4">
                 <textarea
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="p-3 w-full rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="무엇을 공유하고 싶으신가요?"
                   rows="5"
                   value={editDescription}
@@ -1108,7 +1108,7 @@ const PostItem = ({
                               className="object-cover w-full h-full"
                             />
                             <button
-                              className="absolute text-red-500 right-1 top-1 hover:text-red-700"
+                              className="absolute top-1 right-1 text-red-500 hover:text-red-700"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleRestoreImage(image);
@@ -1142,7 +1142,7 @@ const PostItem = ({
                               className="object-cover w-full h-full"
                             />
                             <button
-                              className="absolute text-blue-500 right-1 top-1 hover:text-blue-700"
+                              className="absolute top-1 right-1 text-blue-500 hover:text-blue-700"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleRemoveOriginalImage(image);
@@ -1173,7 +1173,7 @@ const PostItem = ({
 
               <button
                 type="submit"
-                className="w-full p-3 mt-4 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+                className="p-3 mt-4 w-full text-white bg-blue-500 rounded-lg hover:bg-blue-600"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
