@@ -60,9 +60,11 @@ const sessionMiddleware = session({
   cookie: {
     maxAge: 1000 * 60 * 60, // 1시간
     // 개발 환경
-    sameSite: "lax", // 크로스 사이트 쿠키 허용
-    secure: false, // HTTPS에서만 쿠키 전송
+    // sameSite: "lax", // 크로스 사이트 쿠키 허용
+    // secure: false, // HTTPS에서만 쿠키 전송
 
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    secure: process.env.NODE_ENV === "production" ? true : false,
     // 배포 환경
     // sameSite: "none", // 크로스 사이트 쿠키 허용
     // secure: true, // HTTPS에서만 쿠키 전송
