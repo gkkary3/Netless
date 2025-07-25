@@ -140,6 +140,35 @@ usersRouter.get(
   })
 );
 
+// 로그인 후 리다이렉트 전용 엔드포인트 (/:id보다 먼저 정의해야 함)
+usersRouter.get("/redirect-after-login", (req, res) => {
+  try {
+    console.log("리다이렉트 엔드포인트 호출됨");
+    console.log("인증 상태:", req.isAuthenticated());
+    console.log("사용자:", req.user);
+    console.log("CLIENT_URL:", process.env.CLIENT_URL);
+
+    if (!req.isAuthenticated()) {
+      console.log("인증되지 않은 사용자");
+      return res.status(401).json({ error: "로그인이 필요합니다." });
+    }
+
+    const redirectUrl = `${
+      process.env.CLIENT_URL || "http://localhost:3000"
+    }/posts`;
+    console.log("리다이렉트 URL:", redirectUrl);
+
+    // 인증된 사용자를 CLIENT_URL/posts로 리다이렉트
+    return res.redirect(redirectUrl);
+  } catch (error) {
+    console.error("리다이렉트 엔드포인트 에러:", error);
+    return res.status(500).json({
+      error: "리다이렉트 처리 중 오류가 발생했습니다.",
+      details: error.message,
+    });
+  }
+});
+
 // 개별 사용자 정보 조회 API는 마지막에 배치
 usersRouter.get("/:id", checkAuthenticated, async (req, res) => {
   try {
@@ -207,18 +236,6 @@ usersRouter.post("/verify-code", (req, res) => {
   record.verified = true;
 
   return res.json({ success: true, message: "이메일 인증이 완료되었습니다." });
-});
-
-// 로그인 후 리다이렉트 전용 엔드포인트
-usersRouter.get("/redirect-after-login", (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.status(401).json({ error: "로그인이 필요합니다." });
-  }
-
-  // 인증된 사용자를 CLIENT_URL/posts로 리다이렉트
-  return res.redirect(
-    `${process.env.CLIENT_URL || "http://localhost:3000"}/posts`
-  );
 });
 
 module.exports = usersRouter;
