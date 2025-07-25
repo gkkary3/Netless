@@ -72,6 +72,8 @@ const Login = () => {
 
     if (result.success) {
       // .env의 REACT_APP_CLIENT_URL을 사용하여 리다이렉트
+      console.log("CLIENT_URL:", CLIENT_URL);
+
       window.location.href = `${CLIENT_URL}/posts`;
     }
   };
