@@ -110,6 +110,16 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
     }
   };
 
+  // 댓글 수정시 엔터키 처리
+  const handleEditKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (editText.trim() && !isSubmitting) {
+        handleUpdateComment(e);
+      }
+    }
+  };
+
   // 댓글 삭제 처리
   const handleDeleteComment = async () => {
     if (window.confirm("정말 이 댓글을 삭제하시겠습니까?")) {
@@ -259,8 +269,10 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
               <form onSubmit={handleUpdateComment} className="mt-1">
                 <textarea
                   className="w-full p-2 mb-2 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  placeholder="댓글을 수정하세요... (Enter로 저장, Shift+Enter로 줄바꿈)"
                   value={editText}
                   onChange={(e) => setEditText(e.target.value)}
+                  onKeyDown={handleEditKeyDown}
                   rows={2}
                   autoFocus
                 />

@@ -467,6 +467,16 @@ const PostItem = ({
     }
   };
 
+  // 댓글 입력시 엔터키 처리
+  const handleCommentKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (commentText.trim() && !isSubmittingComment) {
+        handleSubmitComment(e);
+      }
+    }
+  };
+
   // 댓글 삭제 후 콜백
   const handleCommentDeleted = (data) => {
     if (onUpdatePost && data.post) {
@@ -865,9 +875,10 @@ const PostItem = ({
               <div className="relative flex-1">
                 <textarea
                   className="w-full px-3 py-2 pr-16 text-sm border rounded-3xl focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  placeholder="댓글을 입력하세요..."
+                  placeholder="댓글을 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈)"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
+                  onKeyDown={handleCommentKeyDown}
                   rows={1}
                   style={{ resize: "none" }}
                 />

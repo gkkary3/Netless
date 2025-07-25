@@ -110,9 +110,9 @@ usersRouter.get(
   "/google/callback",
   passport.authenticate("google", {
     successReturnToOrRedirect:
-      process.env.CLIENT_URL || "http://localhost:3000" + "/posts",
+      (process.env.CLIENT_URL || "http://localhost:3000") + "/posts",
     failureRedirect:
-      process.env.CLIENT_URL || "http://localhost:3000" + "/login",
+      (process.env.CLIENT_URL || "http://localhost:3000") + "/login",
   })
 );
 
@@ -122,9 +122,9 @@ usersRouter.get(
   "/kakao/callback",
   passport.authenticate("kakao", {
     successReturnToOrRedirect:
-      process.env.CLIENT_URL || "http://localhost:3000" + "/posts",
+      (process.env.CLIENT_URL || "http://localhost:3000") + "/posts",
     failureRedirect:
-      process.env.CLIENT_URL || "http://localhost:3000" + "/login",
+      (process.env.CLIENT_URL || "http://localhost:3000") + "/login",
   })
 );
 
