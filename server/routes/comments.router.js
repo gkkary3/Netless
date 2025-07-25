@@ -28,6 +28,7 @@ router.post("/", checkAuthenticated, async (req, res) => {
     // 생성한 댓글에 작성자 정보 넣어주기
     comment.author.id = req.user._id;
     comment.author.username = req.user.username;
+    comment.author.profileImage = req.user.profileImage; // 프로필 이미지 추가
     await comment.save();
 
     // 포스트에 댓글 데이터를 넣어주기
@@ -35,7 +36,13 @@ router.post("/", checkAuthenticated, async (req, res) => {
     await post.save();
 
     // 생성된 댓글 정보와 함께 저장된 post를 가져옴 (populate)
-    const updatedPost = await Post.findById(post._id).populate("comments");
+    const updatedPost = await Post.findById(post._id).populate({
+      path: "comments",
+      populate: {
+        path: "author.id",
+        select: "username profileImage",
+      },
+    });
 
     return res.status(201).json({
       success: true,
@@ -73,7 +80,13 @@ router.delete("/:commentId", checkCommentOwnerShip, async (req, res) => {
     await post.save();
 
     // 업데이트된 게시물 가져오기
-    const updatedPost = await Post.findById(post._id).populate("comments");
+    const updatedPost = await Post.findById(post._id).populate({
+      path: "comments",
+      populate: {
+        path: "author.id",
+        select: "username profileImage",
+      },
+    });
 
     return res.status(200).json({
       success: true,
@@ -107,7 +120,13 @@ router.put("/:commentId", checkCommentOwnerShip, async (req, res) => {
     );
 
     // 업데이트된 게시물 가져오기
-    const updatedPost = await Post.findById(req.params.id).populate("comments");
+    const updatedPost = await Post.findById(req.params.id).populate({
+      path: "comments",
+      populate: {
+        path: "author.id",
+        select: "username profileImage",
+      },
+    });
 
     return res.status(200).json({
       success: true,

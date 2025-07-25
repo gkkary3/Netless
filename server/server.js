@@ -29,6 +29,13 @@ require("dotenv").config();
 require("./config/passport");
 
 const cookieEncryptionKey = process.env.SESSION_SECRET;
+
+// 배포 환경 감지
+const isProduction =
+  process.env.NODE_ENV === "production" ||
+  process.env.RENDER ||
+  process.env.PORT;
+
 // Proxy 설정 추가
 app.set("trust proxy", 1);
 // 미들웨어 설정
@@ -59,13 +66,10 @@ const sessionMiddleware = session({
   }),
   cookie: {
     maxAge: 1000 * 60 * 60, // 1시간
-    // 개발 환경
-    sameSite: "lax", // 크로스 사이트 쿠키 허용
-    secure: false, // HTTPS에서만 쿠키 전송
-
-    // 배포 환경
-    // sameSite: "none", // 크로스 사이트 쿠키 허용
-    // secure: true, // HTTPS에서만 쿠키 전송
+    // 배포 환경에서 크로스 도메인 쿠키 설정
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction ? true : false,
+    domain: isProduction ? ".kkary.com" : undefined, // 서브도메인 쿠키 공유
     httpOnly: true, // JavaScript에서 쿠키 접근 방지
   },
 });
