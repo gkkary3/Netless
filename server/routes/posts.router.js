@@ -36,20 +36,22 @@ router.post(
       const post = new Post({
         description: desc,
         images: images,
-        author: {
-          id: req.user._id,
-          username: req.user.username,
-          profileImage: req.user.profileImage,
-        },
+        author: req.user._id, // 사용자 ID만 저장
       });
 
       await post.save();
+
+      // 생성된 게시물을 populate해서 반환
+      const populatedPost = await Post.findById(post._id).populate(
+        "author",
+        "username email profileImage"
+      );
 
       // API 응답
       res.status(201).json({
         success: true,
         message: "포스트가 성공적으로 등록되었습니다!",
-        post: post,
+        post: populatedPost,
       });
     } catch (err) {
       // 오류 로그 제거
@@ -60,31 +62,20 @@ router.post(
 
 router.get("/", async (req, res) => {
   try {
-    // User 모델 참조를 위해 require
-    const User = require("../models/users.model");
-
     const posts = await Post.find()
-      .populate("comments")
+      .populate("author", "username email profileImage") // 작성자 정보 populate
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          select: "username email profileImage", // 댓글 작성자 정보도 populate
+        },
+      })
       .sort({ createdAt: -1 });
 
-    // 최신 프로필 정보 반영
-    const updatedPosts = await Promise.all(
-      posts.map(async (post) => {
-        const postObj = post.toObject();
-        if (post.author && post.author.id) {
-          const user = await User.findById(post.author.id).select(
-            "profileImage"
-          );
-          if (user && user.profileImage) {
-            postObj.author.profileImage = user.profileImage;
-          }
-        }
-        return postObj;
-      })
-    );
-
-    res.json(updatedPosts);
+    res.json(posts);
   } catch (err) {
+    console.error("게시물 조회 오류:", err);
     return res.status(500).send("Internal Server Error");
   }
 });
@@ -151,12 +142,23 @@ router.put("/:id", checkPostOwnerShip, uploadMiddleware, async (req, res) => {
     // 게시물 저장
     await post.save();
 
+    // 수정된 게시물을 populate해서 반환
+    const populatedPost = await Post.findById(post._id)
+      .populate("author", "username email profileImage")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          select: "username email profileImage",
+        },
+      });
+
     // API 응답
     if (req.xhr || req.headers.accept.includes("application/json")) {
       return res.json({
         success: true,
         message: "포스트가 성공적으로 수정되었습니다!",
-        post: post,
+        post: populatedPost,
       });
     } else {
       req.flash("success", "포스트가 성공적으로 수정되었습니다!");

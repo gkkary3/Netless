@@ -154,7 +154,7 @@ const MyFeed = () => {
 
       // 현재 보고 있는 사용자의 게시물만 필터링
       const filteredPosts = postsData.filter(
-        (post) => post.author.id === targetUserId
+        (post) => post.author._id === targetUserId
       );
       setPosts(filteredPosts);
 

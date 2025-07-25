@@ -39,7 +39,7 @@ async function checkPostOwnerShip(req, res, next) {
         req.flash("error", "포스트를 찾을 수 없습니다!");
         return res.redirect(`${process.env.CLIENT_URL}/posts`);
       }
-      if (foundPost.author.id.equals(req.user._id)) {
+      if (foundPost.author.equals(req.user._id)) {
         req.post = foundPost;
         next();
       } else {
@@ -64,7 +64,7 @@ async function checkCommentOwnerShip(req, res, next) {
         req.flash("error", "댓글을 찾을 수 없습니다!");
         return res.redirect(`${process.env.CLIENT_URL}/posts`);
       }
-      if (foundComment.author.id.equals(req.user._id)) {
+      if (foundComment.author.equals(req.user._id)) {
         req.comment = foundComment;
         next();
       } else {

@@ -126,16 +126,16 @@ const Posts = () => {
             // 내 게시물과 친구 게시물 필터링
             const myAndFriendsPostsFiltered = sortedPosts.filter(
               (post) =>
-                post.author.id === user._id ||
-                myFriends.includes(post.author.id)
+                post.author._id === user._id ||
+                myFriends.includes(post.author._id)
             );
             setMyAndFriendsPosts(myAndFriendsPostsFiltered);
 
             // 추천 게시물 필터링 (내 게시물과 친구 게시물이 아닌 것)
             const recommendedPostsFiltered = sortedPosts.filter(
               (post) =>
-                post.author.id !== user._id &&
-                !myFriends.includes(post.author.id)
+                post.author._id !== user._id &&
+                !myFriends.includes(post.author._id)
             );
 
             // 랜덤으로 최대 10개 선택

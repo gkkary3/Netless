@@ -17,12 +17,12 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
   // 현재 사용자가 댓글 작성자인지 확인
-  const isAuthor = user && comment.author?.id === user._id;
+  const isAuthor = user && comment.author?._id === user._id;
 
   // 프로필 모달 열기
   const openProfileModal = () => {
     setProfileUser({
-      _id: comment.author.id,
+      _id: comment.author._id,
       username: comment.author.username,
       profileImage: comment.author.profileImage,
     });

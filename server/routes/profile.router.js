@@ -39,8 +39,15 @@ router.get("/", checkAuthenticated, async (req, res) => {
     }
 
     // 사용자가 작성한 게시물을 찾아 comments를 populate하고 생성일 기준 내림차순 정렬
-    const posts = await Post.find({ "author.id": req.params.id })
-      .populate("comments")
+    const posts = await Post.find({ author: req.params.id })
+      .populate("author", "username email profileImage")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "author",
+          select: "username email profileImage",
+        },
+      })
       .sort({ createdAt: -1 });
 
     return res.status(200).json({

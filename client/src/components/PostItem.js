@@ -39,7 +39,7 @@ const PostItem = ({
   const navigate = useNavigate();
 
   // 현재 사용자가 게시물의 작성자인지 확인
-  const isAuthor = user && post.author?.id === user._id;
+  const isAuthor = user && post.author?._id === user._id;
 
   // 현재 사용자가 좋아요를 눌렀는지 확인
   const isLikedByCurrentUser = post.likes?.includes(user?._id);
@@ -53,7 +53,7 @@ const PostItem = ({
     if (showProfileModal) {
       setShowProfileModal(false);
     }
-    navigate(`/feed/${post.author.id}`);
+    navigate(`/feed/${post.author._id}`);
   };
 
   // 드롭다운 토글
@@ -533,7 +533,7 @@ const PostItem = ({
       return;
     }
     setProfileUser({
-      _id: post.author.id,
+      _id: post.author._id,
       username: post.author.username,
       profileImage: post.author.profileImage,
     });
