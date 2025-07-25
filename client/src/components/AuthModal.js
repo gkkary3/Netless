@@ -173,8 +173,10 @@ const AuthModal = ({ isOpen, onClose }) => {
       toast.success("로그인 성공!");
       onClose();
 
-      // 서버의 리다이렉트 엔드포인트로 이동 (소셜 로그인과 동일한 방식)
-      window.location.href = `${API_URL}/auth/redirect-after-login`;
+      // 세션이 완전히 설정될 시간을 주고 리다이렉트
+      setTimeout(() => {
+        window.location.href = `${API_URL}/auth/redirect-after-login`;
+      }, 500);
     } else {
       toast.error(result.error || "로그인에 실패했습니다.");
     }
@@ -210,8 +212,10 @@ const AuthModal = ({ isOpen, onClose }) => {
       toast.success("회원가입 성공!");
       onClose();
 
-      // 서버의 리다이렉트 엔드포인트로 이동 (소셜 로그인과 동일한 방식)
-      window.location.href = `${API_URL}/auth/redirect-after-login`;
+      // 세션이 완전히 설정될 시간을 주고 리다이렉트
+      setTimeout(() => {
+        window.location.href = `${API_URL}/auth/redirect-after-login`;
+      }, 500);
     }
   };
 
