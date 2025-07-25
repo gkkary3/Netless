@@ -37,7 +37,19 @@ usersRouter.post("/login", (req, res, next) => {
         console.error("온라인 상태 업데이트 실패:", updateErr);
       }
 
-      return res.json({ success: true, user });
+      // JSON API 요청인지 확인
+      if (
+        req.xhr ||
+        req.headers.accept === "application/json" ||
+        req.headers["content-type"]?.includes("application/json")
+      ) {
+        return res.json({ success: true, user });
+      } else {
+        // 웹 요청인 경우 리다이렉트 (소셜 로그인과 동일하게)
+        return res.redirect(
+          `${process.env.CLIENT_URL || "http://localhost:3000"}/posts`
+        );
+      }
     });
   })(req, res, next);
 });
@@ -195,6 +207,18 @@ usersRouter.post("/verify-code", (req, res) => {
   record.verified = true;
 
   return res.json({ success: true, message: "이메일 인증이 완료되었습니다." });
+});
+
+// 로그인 후 리다이렉트 전용 엔드포인트
+usersRouter.get("/redirect-after-login", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "로그인이 필요합니다." });
+  }
+
+  // 인증된 사용자를 CLIENT_URL/posts로 리다이렉트
+  return res.redirect(
+    `${process.env.CLIENT_URL || "http://localhost:3000"}/posts`
+  );
 });
 
 module.exports = usersRouter;

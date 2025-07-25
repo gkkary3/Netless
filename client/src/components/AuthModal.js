@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
@@ -20,22 +20,10 @@ const AuthModal = ({ isOpen, onClose }) => {
   const [verificationStatus, setVerificationStatus] = useState(""); // "pending", "code_sent", "success", "fail"
   const [timer, setTimer] = useState(0);
   const [timerId, setTimerId] = useState(null);
-  const shouldRedirectRef = useRef(false);
 
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
-  const CLIENT_URL =
-    process.env.REACT_APP_CLIENT_URL || "http://localhost:3000";
 
-  const { login, signup, user } = useAuth();
-
-  // 사용자 상태 변화 감지하여 리다이렉트
-  useEffect(() => {
-    if (user && shouldRedirectRef.current) {
-      shouldRedirectRef.current = false;
-      console.log("사용자 인증 완료, 리다이렉트 시작:", user);
-      window.location.href = `${CLIENT_URL}/posts`;
-    }
-  }, [user, CLIENT_URL]);
+  const { login, signup } = useAuth();
 
   // 모달이 열릴 때 폼 데이터 초기화
   useEffect(() => {
@@ -184,7 +172,9 @@ const AuthModal = ({ isOpen, onClose }) => {
     if (result.success) {
       toast.success("로그인 성공!");
       onClose();
-      shouldRedirectRef.current = true; // 리다이렉트 플래그 설정
+
+      // 서버의 리다이렉트 엔드포인트로 이동 (소셜 로그인과 동일한 방식)
+      window.location.href = `${API_URL}/auth/redirect-after-login`;
     } else {
       toast.error(result.error || "로그인에 실패했습니다.");
     }
@@ -219,7 +209,9 @@ const AuthModal = ({ isOpen, onClose }) => {
     if (result.success) {
       toast.success("회원가입 성공!");
       onClose();
-      shouldRedirectRef.current = true; // 리다이렉트 플래그 설정
+
+      // 서버의 리다이렉트 엔드포인트로 이동 (소셜 로그인과 동일한 방식)
+      window.location.href = `${API_URL}/auth/redirect-after-login`;
     }
   };
 

@@ -45,7 +45,6 @@ const LoginFormSkeleton = () => (
 );
 
 const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
-const CLIENT_URL = process.env.REACT_APP_CLIENT_URL || "http://localhost:3000";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -71,8 +70,8 @@ const Login = () => {
     setIsLoading(false);
 
     if (result.success) {
-      // 환경변수의 CLIENT_URL을 사용하여 리다이렉트
-      window.location.href = `${CLIENT_URL}/posts`;
+      // 서버의 리다이렉트 엔드포인트로 이동 (소셜 로그인과 동일한 방식)
+      window.location.href = `${API_URL}/auth/redirect-after-login`;
     }
   };
 
