@@ -70,10 +70,21 @@ const Login = () => {
     setIsLoading(false);
 
     if (result.success) {
-      // 세션이 완전히 설정될 시간을 주고 리다이렉트
-      setTimeout(() => {
-        window.location.href = `${API_URL}/auth/redirect-after-login`;
-      }, 500);
+      // 현재 도메인 확인
+      const currentDomain = window.location.hostname;
+      console.log("현재 도메인:", currentDomain);
+
+      if (currentDomain === "netless.vercel.app") {
+        // netless.vercel.app에서는 바로 www.kkary.com으로 리다이렉트
+        console.log("netless.vercel.app에서 www.kkary.com으로 직접 리다이렉트");
+        window.location.href = "https://www.kkary.com/posts";
+      } else {
+        // www.kkary.com에서는 기존 방식 유지
+        console.log("www.kkary.com에서 리다이렉트 엔드포인트 사용");
+        setTimeout(() => {
+          window.location.href = `${API_URL}/auth/redirect-after-login`;
+        }, 500);
+      }
     }
   };
 
