@@ -219,7 +219,6 @@ const CommentItem = ({ comment, postId, onDeleteComment, onUpdateComment }) => {
               </span>
               <span className="ml-2 text-xs text-gray-500">
                 {new Date(comment.createdAt).toLocaleDateString()}
-                {comment.updatedAt > comment.createdAt && " (수정됨)"}
               </span>
 
               {/* 댓글 작성자인 경우에만 수정/삭제 드롭다운 표시 */}

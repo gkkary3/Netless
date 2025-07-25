@@ -25,13 +25,24 @@ router.put("/", checkAuthenticated, async (req, res) => {
         (like) => like !== req.user._id.toString()
       );
 
-      const updatedPost = await Post.findByIdAndUpdate(
+      await Post.findByIdAndUpdate(
         post._id,
         {
           likes: updatedLikes,
         },
         { new: true }
       );
+
+      // 업데이트된 게시물을 populate해서 반환
+      const updatedPost = await Post.findById(post._id)
+        .populate("author", "username email profileImage")
+        .populate({
+          path: "comments",
+          populate: {
+            path: "author",
+            select: "username email profileImage",
+          },
+        });
 
       return res.status(200).json({
         success: true,
@@ -40,13 +51,24 @@ router.put("/", checkAuthenticated, async (req, res) => {
       });
     } else {
       // 좋아요를 누르지 않았다면 좋아요 추가
-      const updatedPost = await Post.findByIdAndUpdate(
+      await Post.findByIdAndUpdate(
         post._id,
         {
           likes: post.likes.concat([req.user._id]),
         },
         { new: true }
       );
+
+      // 업데이트된 게시물을 populate해서 반환
+      const updatedPost = await Post.findById(post._id)
+        .populate("author", "username email profileImage")
+        .populate({
+          path: "comments",
+          populate: {
+            path: "author",
+            select: "username email profileImage",
+          },
+        });
 
       return res.status(200).json({
         success: true,
