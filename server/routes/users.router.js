@@ -37,12 +37,28 @@ usersRouter.post("/login", (req, res, next) => {
         console.error("온라인 상태 업데이트 실패:", updateErr);
       }
 
+      // 배포 환경 디버깅
+      console.log("로그인 성공:", {
+        userId: user._id,
+        username: user.username,
+        sessionID: req.sessionID,
+        isAuthenticated: req.isAuthenticated(),
+      });
+
       return res.json({ success: true, user });
     });
   })(req, res, next);
 });
 
 usersRouter.get("/check", (req, res) => {
+  // 배포 환경 디버깅
+  console.log("인증 체크:", {
+    sessionID: req.sessionID,
+    isAuthenticated: req.isAuthenticated(),
+    user: req.user ? { id: req.user._id, username: req.user.username } : null,
+    cookies: req.headers.cookie,
+  });
+
   if (req.isAuthenticated()) {
     res.json({ authenticated: true, user: req.user });
   } else {
