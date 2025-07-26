@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { toast } from "react-toastify";
 
@@ -24,6 +25,7 @@ const AuthModal = ({ isOpen, onClose }) => {
   const API_URL = process.env.REACT_APP_API_URL || "http://localhost:4000";
 
   const { login, signup } = useAuth();
+  const navigate = useNavigate();
 
   // 모달이 열릴 때 폼 데이터 초기화
   useEffect(() => {
@@ -172,22 +174,7 @@ const AuthModal = ({ isOpen, onClose }) => {
     if (result.success) {
       toast.success("로그인 성공!");
       onClose();
-
-      // 현재 도메인 확인
-      const currentDomain = window.location.hostname;
-      console.log("현재 도메인:", currentDomain);
-
-      if (currentDomain === "netless.vercel.app") {
-        // netless.vercel.app에서는 바로 www.kkary.com으로 리다이렉트
-        console.log("netless.vercel.app에서 www.kkary.com으로 직접 리다이렉트");
-        window.location.href = "https://www.kkary.com/posts";
-      } else {
-        // www.kkary.com에서는 기존 방식 유지
-        console.log("www.kkary.com에서 리다이렉트 엔드포인트 사용");
-        setTimeout(() => {
-          window.location.href = `${API_URL}/auth/redirect-after-login`;
-        }, 500);
-      }
+      navigate("/posts");
     } else {
       toast.error(result.error || "로그인에 실패했습니다.");
     }
@@ -222,22 +209,7 @@ const AuthModal = ({ isOpen, onClose }) => {
     if (result.success) {
       toast.success("회원가입 성공!");
       onClose();
-
-      // 현재 도메인 확인
-      const currentDomain = window.location.hostname;
-      console.log("현재 도메인:", currentDomain);
-
-      if (currentDomain === "netless.vercel.app") {
-        // netless.vercel.app에서는 바로 www.kkary.com으로 리다이렉트
-        console.log("netless.vercel.app에서 www.kkary.com으로 직접 리다이렉트");
-        window.location.href = "https://www.kkary.com/posts";
-      } else {
-        // www.kkary.com에서는 기존 방식 유지
-        console.log("www.kkary.com에서 리다이렉트 엔드포인트 사용");
-        setTimeout(() => {
-          window.location.href = `${API_URL}/auth/redirect-after-login`;
-        }, 500);
-      }
+      navigate("/posts");
     }
   };
 
