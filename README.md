@@ -108,7 +108,7 @@ express-sns-app/
 
 ## 🌐 배포 환경
 
-- **Frontend**: Vercel (https://netless.vercel.app)
+- **Frontend**: Vercel (https://www.kkary.com)
 - **Backend**: Render (서버 배포)
 - **Database**: MongoDB Atlas
 
